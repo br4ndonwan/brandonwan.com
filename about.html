@@ -141,6 +141,45 @@
     .nav-item.is-active .chevron { transform: rotate(180deg); }
 
     /* ══════════════════════════════
+       MOBILE RESPONSIVE
+    ══════════════════════════════ */
+    @media (max-width: 768px) {
+      #cursor { display: none; }
+      * { cursor: auto !important; }
+
+      #landing {
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 48px 24px 120px;
+        overflow-y: auto;
+        position: relative;
+        height: auto;
+        min-height: 100vh;
+      }
+
+      body { overflow: auto; height: auto; }
+
+      .landing-inner {
+        width: 100%;
+        max-width: 420px;
+      }
+
+      .landing-sig { font-size: 20px; }
+
+      .landing-body { font-size: 14px; }
+
+      body::after {
+        content: "";
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 75px;
+        background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 40%, rgba(255,255,255,1) 75%);
+        pointer-events: none;
+        z-index: 1000;
+      }
+    }
+
+    /* ══════════════════════════════
        MOBILE NAV OVERLAY
     ══════════════════════════════ */
     .mobile-nav-pill { display: none; }
