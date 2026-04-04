@@ -455,7 +455,6 @@
       </div>
     </div>
     <div class="nav-bar">
-      <div class="nav-item" id="btn-home" style="border-radius:20px;">Home</div>
       <div class="nav-item" id="btn-work">Work
         <svg class="chevron" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
@@ -1156,10 +1155,6 @@
   const btnWork       = document.getElementById('btn-work');
   const btnPlayground = document.getElementById('btn-playground');
   const btnAbout      = document.getElementById('btn-about');
-
-  const btnHome = document.getElementById('btn-home');
-  btnHome.addEventListener('mouseenter', () => { clearTimeout(closeTimer); closeDropdown(); });
-  btnHome.addEventListener('click', () => navigateTo('index.html'));
 
   btnWork.addEventListener('mouseenter',       () => { clearTimeout(closeTimer); openDropdown('work', btnWork); });
   btnWork.addEventListener('click',            () => navigateTo('index.html'));
