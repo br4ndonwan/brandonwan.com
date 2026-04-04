@@ -146,6 +146,8 @@
     .mobile-nav-close { display: none; }
 
     @media (max-width: 768px) {
+      #cursor { display: none; }
+      * { cursor: auto !important; }
       .nav-wrapper { display: none; }
 
       .mobile-nav-pill {
@@ -157,11 +159,12 @@
         left: 50%;
         transform: translateX(-50%);
         z-index: 1001;
-        background: transparent;
+        background: #fff;
         border-radius: 10px;
         padding: 12px 22px;
         font-size: 14px;
         color: #4e4e4e;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.05);
         cursor: pointer;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
@@ -263,6 +266,19 @@
       .mobile-nav-close.is-open {
         opacity: 1;
         pointer-events: all;
+      }
+
+      /* Bottom fade so content bleeds into the nav pill area */
+      body::after {
+        content: "";
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100px;
+        background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+        pointer-events: none;
+        z-index: 1000;
       }
     }
   </style>
