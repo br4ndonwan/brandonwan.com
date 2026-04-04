@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MEC — Brandon Wan</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    * { cursor: none !important; }
+
+    /* ── Page transition overlay ── */
+    @keyframes overlay-out  { from { opacity: 1; } to { opacity: 0; } }
+    #page-overlay {
+      position: fixed; inset: 0;
+      background: #F7F7F7;
+      z-index: 9990;
+      pointer-events: none;
+      animation: overlay-out 1.5s ease forwards;
+    }
+
+    /* ── Custom cursor ── */
+    #cursor {
+      position: fixed; top: 0; left: 0;
+      width: 12px; height: 12px;
+      background: #0000ff; border-radius: 50%;
+      pointer-events: none; z-index: 99999;
+      transform: translate(-50%, -50%) scale(1);
+      transition: transform 0.2s cubic-bezier(0.34, 1.6, 0.64, 1);
+      will-change: transform;
+    }
+    #cursor.is-hovering { transform: translate(-50%, -50%) scale(2.2); }
+
+    @font-face {
+      font-family: 'Geist';
+      src: url('fonts/Geist-Regular.woff2') format('woff2');
+      font-weight: 400; font-style: normal;
+    }
+    @font-face {
+      font-family: 'Geist';
+      src: url('fonts/Geist-Medium.woff2') format('woff2');
+      font-weight: 500; font-style: normal;
+    }
+    @font-face {
+      font-family: 'Geist';
+      src: url('fonts/Geist-SemiBold.woff2') format('woff2');
+      font-weight: 600; font-style: normal;
+    }
+
+    body {
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background: #FFFFFF;
+    }
+
+    /* ══════════════════════════════
+       HERO
+    ══════════════════════════════ */
+    .hero {
+      width: 100%;
+      height: 88vh;
+      overflow: hidden;
+      background: #c3c3c3;
+    }
+    .hero img, .hero video {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+
+    /* ══════════════════════════════
+       CONTENT
+    ══════════════════════════════ */
+    .content {
+      padding-top:    80px;
+      padding-bottom: 160px;
+      padding-left:   max(80px,  calc(50vw - 358px));
+      padding-right:  max(32px,  calc(50vw - 358px));
+    }
+
+    /* ── Metadata row ── */
+    .project-meta {
+      display: grid;
+      grid-template-columns: 112px 143px 184px 120px;
+      gap: 52px;
+      margin-bottom: 80px;
+    }
+    .meta-label {
+      font-size: 12px; font-weight: 400;
+      letter-spacing: 0.5px; line-height: 20px;
+      color: #a4a7ae; margin-bottom: 10px;
+    }
+    .meta-value {
+      font-size: 13px; font-weight: 400;
+      line-height: 20px; color: #414651;
+    }
+    .meta-value p { margin-bottom: 4px; }
+
+    /* ── Section building blocks ── */
+    .cs-section { margin-bottom: 112px; }
+
+    .section-label {
+      font-size: 16px; font-weight: 400;
+      line-height: 24px; color: #a4a7ae;
+      margin-bottom: 12px;
+    }
+    .section-heading {
+      font-size: 28px; font-weight: 600;
+      line-height: 32px; color: #0a0d12;
+      margin-bottom: 24px; max-width: 664px;
+    }
+    .text-md {
+      font-size: 16px; font-weight: 400;
+      line-height: 24px; color: #414651;
+      margin-bottom: 16px; max-width: 674px;
+    }
+    .text-md-dark {
+      font-size: 16px; font-weight: 400;
+      line-height: 24px; color: #181d27;
+      margin-bottom: 16px; max-width: 674px;
+    }
+
+    /* ── Grey placeholder image ── */
+    .cs-placeholder {
+      background: #c3c3c3;
+      margin-top: 36px;
+      margin-bottom: 64px;
+      overflow: hidden;
+      position: relative;
+      outline: 1px solid #E8E8E8;
+    }
+    .cs-placeholder img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+    .cs-placeholder.wide { width: 100%; height: 444px; max-width: 100%; }
+    .cs-placeholder.std  { width: 100%; height: 446px; max-width: 100%; }
+
+    /* ── Phone-frame feature rows (Solution section) ── */
+    .phone-row {
+      display: flex;
+      gap: 43px;
+      align-items: flex-end;
+      margin-top: 96px;
+      max-width: 750px;
+    }
+    .phone-frame {
+      width: 420px;
+      height: 524px;
+      background: #c3c3c3;
+      flex-shrink: 0;
+      overflow: hidden;
+      position: relative;
+      outline: 1px solid #E8E8E8;
+    }
+    .phone-frame img,
+    .phone-frame video {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .phone-text {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+    .phone-text .sub-heading,
+    .phone-text .text-md { margin-bottom: 0; }
+
+
+    /* ── 3-col research methods grid ── */
+    .friction-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 41px;
+      margin-top: 36px;
+      max-width: 750px;
+    }
+    .friction-title {
+      font-size: 16px; font-weight: 500;
+      line-height: 24px; color: #181d27; margin-bottom: 8px;
+    }
+    .friction-body {
+      font-size: 16px; font-weight: 400;
+      line-height: 24px; color: #414651;
+    }
+
+    /* ── Findings list ── */
+    .finding-item { margin-bottom: 32px; max-width: 674px; }
+    .finding-title {
+      font-size: 18px; font-weight: 400;
+      line-height: 28px; color: #181d27;
+      margin-bottom: 6px;
+    }
+    .finding-body {
+      font-size: 16px; font-weight: 400;
+      line-height: 24px; color: #414651;
+    }
+
+    /* ── Project title ── */
+    .project-title {
+      font-size: 32px; font-weight: 600;
+      line-height: 40px; color: #0a0d12;
+      max-width: 750px; margin-bottom: 36px;
+    }
+
+    /* ── Sub-sections ── */
+    .sub-section { margin-top: 96px; }
+    .sub-section .cs-placeholder { margin-bottom: 0; }
+    .sub-heading {
+      font-size: 24px; font-weight: 600;
+      line-height: 28px; color: #0a0d12;
+      margin-bottom: 12px; max-width: 674px;
+    }
+    .sub-heading-lg {
+      font-size: 24px; font-weight: 600;
+      line-height: 28px; color: #0a0d12;
+      margin-bottom: 12px; max-width: 674px;
+      margin-top: 56px;
+    }
+
+    /* ── Insight callout box ── */
+    .insight-box {
+      background: #fff;
+      border-radius: 6px;
+      padding: 20px 24px;
+      max-width: 750px;
+      font-size: 16px; font-weight: 400;
+      line-height: 24px; color: #181d27;
+      margin-top: 32px; margin-bottom: 32px;
+    }
+    .insight-box strong {
+      display: block; margin-bottom: 8px;
+      color: #a4a7ae; font-weight: 400; font-size: 14px;
+    }
+
+    /* ── 2-col ideation comparison ── */
+    .ideation-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 36px;
+      max-width: 750px;
+    }
+    .ideation-col { display: flex; flex-direction: column; gap: 12px; }
+    .ideation-label {
+      font-size: 16px; font-weight: 500;
+      line-height: 24px; color: #181d27;
+    }
+    .ideation-img {
+      width: 100%; height: 300px;
+      background: #c3c3c3;
+      border-radius: 6px;
+      overflow: hidden; position: relative;
+    }
+    .ideation-img img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+    .ideation-desc {
+      font-size: 16px; font-weight: 400;
+      line-height: 24px; color: #414651;
+    }
+
+    /* ── Design reasoning list ── */
+    .reasoning-block {
+      max-width: 717px;
+      margin-top: 48px;
+    }
+    .reasoning-block p {
+      font-size: 16px; font-weight: 400;
+      line-height: 24px; color: #181d27;
+      margin-bottom: 24px;
+    }
+    .reasoning-block p:last-child { margin-bottom: 0; }
+
+    /* ══════════════════════════════
+       LEFT PROGRESS NAV
+    ══════════════════════════════ */
+    .page-nav-wrap {
+      position: fixed; left: 32px; top: 50%;
+      transform: translateY(-50%);
+      z-index: 500; opacity: 0; pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    .page-nav-wrap.is-visible { opacity: 1; pointer-events: all; }
+    .page-nav-bars { display: flex; flex-direction: column; gap: 16px; }
+    .page-nav-bar {
+      width: 22px; height: 2px; border-radius: 1px;
+      background: #e6e5e3; cursor: pointer;
+      transition: background 0.2s ease, width 0.25s cubic-bezier(0.34, 1.5, 0.64, 1);
+    }
+    .page-nav-bar.is-active { background: #32302d; }
+    .page-nav-bar:hover { width: 30px; background: #32302d; }
+
+    .page-nav-popup {
+      position: absolute; left: 0; bottom: calc(100% + 14px);
+      opacity: 0; pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity 0.22s ease, transform 0.32s cubic-bezier(0.34, 1.3, 0.64, 1);
+      background: #fff; border-radius: 6px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.09), 0 0 0 0.5px rgba(0,0,0,0.06);
+      padding: 10px; width: 220px;
+    }
+    .page-nav-popup.is-open { opacity: 1; pointer-events: all; transform: translateY(0); }
+    .popup-item {
+      padding: 8px 10px; border-radius: 6px;
+      font-size: 14px; font-weight: 500; line-height: 20px;
+      color: #c8c7c5; cursor: pointer; white-space: nowrap;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .popup-item.is-active, .popup-item:hover { background: #e6e5e3; color: #2c2c2c; }
+
+    /* ══════════════════════════════
+       FLOATING NAV
+    ══════════════════════════════ */
+    .nav-wrapper {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000; width: fit-content;
+    }
+    .nav-card {
+      background: #fff; border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.05);
+      overflow: hidden; width: fit-content;
+    }
+    .nav-dropdown { height: 0; overflow: hidden; }
+    .nav-dropdown-inner {
+      width: 254px; margin: 0 auto;
+      padding: 18px 0 28px; position: relative;
+    }
+    .dropdown-list { display: flex; flex-direction: column; gap: 4px; width: 84px; }
+    .dropdown-item {
+      font-size: 14px; font-weight: 400;
+      color: rgba(78,78,78,0.72);
+      cursor: pointer; padding: 2px 0; white-space: nowrap;
+      transform: translateX(0px);
+      transition: transform 0.4s cubic-bezier(0.34, 1.6, 0.64, 1), opacity 0.2s ease, color 0.15s ease;
+    }
+    .dropdown-item.item-hovered { transform: translateX(6px); color: rgba(78,78,78,1); opacity: 1 !important; }
+    .dropdown-list.has-hover .dropdown-item:not(.item-hovered) { opacity: 0.35; }
+    .preview-container {
+      position: absolute; left: 182px; top: 18px;
+      width: 64px; height: 64px; border-radius: 5px; overflow: hidden;
+    }
+    .preview-box {
+      position: absolute; width: 64px; height: 64px; left: 0; top: 0;
+      background: transparent; opacity: 0;
+      transform: scale(1.06) translateY(4px);
+      transition: opacity 0.28s cubic-bezier(0.4,0,0.2,1), transform 0.42s cubic-bezier(0.34,1.2,0.64,1);
+    }
+    .preview-box.is-active { opacity: 1; transform: scale(1) translateY(0px); }
+    .preview-box.is-leaving {
+      opacity: 0; transform: scale(0.97) translateY(-2px);
+      transition: opacity 0.18s cubic-bezier(0.4,0,1,1), transform 0.22s cubic-bezier(0.4,0,1,1);
+    }
+    .nav-bar { display: flex; align-items: center; padding: 2px 6px; gap: 4px; }
+    .nav-item {
+      padding: 10px 16px; font-size: 14px; font-weight: 400;
+      color: #4e4e4e; cursor: pointer;
+      display: flex; align-items: center; gap: 2px;
+      white-space: nowrap; user-select: none;
+      transition: background 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #btn-work       { border-radius: 24px; }
+    #btn-about      { border-radius: 30px; }
+    #btn-playground { border-radius: 36px; }
+    .nav-item.is-active { background: #e9e9e9; }
+    .chevron {
+      width: 10px; height: 10px; flex-shrink: 0;
+      opacity: 0.6;
+      transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+    .nav-item.is-active .chevron { transform: rotate(180deg); }
+  </style>
+</head>
+<body>
+
+  <div id="page-overlay"></div>
+  <div id="cursor"></div>
+
+  <!-- ── Hero ── -->
+  <section class="hero" id="heroSection">
+    <!-- placeholder until a hero image/video is provided -->
+  </section>
+
+  <!-- ── Left progress nav ── -->
+  <div class="page-nav-wrap" id="pageNavWrap">
+    <div class="page-nav-bars">
+      <div class="page-nav-bar is-active" data-idx="0"></div>
+      <div class="page-nav-bar" data-idx="1"></div>
+      <div class="page-nav-bar" data-idx="2"></div>
+      <div class="page-nav-bar" data-idx="3"></div>
+      <div class="page-nav-bar" data-idx="4"></div>
+      <div class="page-nav-bar" data-idx="5"></div>
+      <div class="page-nav-bar" data-idx="6"></div>
+    </div>
+    <div class="page-nav-popup" id="pageNavPopup">
+      <div class="popup-item is-active" data-idx="0">Overview</div>
+      <div class="popup-item" data-idx="1">Problem</div>
+      <div class="popup-item" data-idx="2">Solution</div>
+      <div class="popup-item" data-idx="3">Initial Research</div>
+      <div class="popup-item" data-idx="4">Co-Design Workshop</div>
+      <div class="popup-item" data-idx="5">Business Reframe</div>
+      <div class="popup-item" data-idx="6">Ideation</div>
+    </div>
+  </div>
+
+  <!-- ── Page content ── -->
+  <div class="content">
+
+    <!-- Project title -->
+    <h1 class="project-title">Rebuilding MEC's community with a dedicated events app</h1>
+
+    <!-- Metadata -->
+    <div class="project-meta">
+      <div>
+        <div class="meta-label">TIMELINE</div>
+        <div class="meta-value">February 2026<br>(3 Days)</div>
+      </div>
+      <div>
+        <div class="meta-label">TEAM</div>
+        <div class="meta-value">
+          <p>Janel Co</p>
+          <p>Hazel Hau</p>
+          <p>Sarah Luong</p>
+        </div>
+      </div>
+      <div>
+        <div class="meta-label">MY CONTRIBUTIONS</div>
+        <div class="meta-value">
+          <p>UI/UX Design</p>
+          <p>Visual Design</p>
+          <p>Prototype</p>
+          <p>UX Research</p>
+        </div>
+      </div>
+      <div>
+        <div class="meta-label">ROLE</div>
+        <div class="meta-value">UX Designer</div>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section id="section-overview" class="cs-section">
+      <p class="section-label">OVERVIEW</p>
+      <h2 class="section-heading">MEC built their identity on community, then lost it. How do we bring it back?</h2>
+      <p class="text-md">MEC started as a Canadian co-operative where members were also co-owners, but in 2020 the board sold to a U.S. private equity firm, fracturing the trust that defined the brand for 50 years.</p>
+      <p class="text-md">In 2025, MEC returned to Canadian ownership and is now working to rebuild that connection with its community.</p>
+    </section>
+
+    <!-- PROBLEM -->
+    <section id="section-problem" class="cs-section">
+      <p class="section-label">PROBLEM</p>
+      <h2 class="section-heading">They're Canada's leading outdoor retailer...</h2>
+      <div class="cs-placeholder wide" data-img-id="IMAGE1"></div>
+      <h2 class="section-heading">...but did you know they host community events? Neither did 97% of the customers we interviewed.</h2>
+      <p class="text-md">Events have always been a pillar of MEC's identity, yet they're nearly impossible to find and even harder to join.</p>
+    </section>
+
+    <!-- SOLUTION -->
+    <section id="section-solution" class="cs-section">
+      <p class="section-label">SOLUTION</p>
+      <h2 class="section-heading">MEC Events: a dedicated app for discovering and joining MEC community events.</h2>
+
+      <div class="phone-row" id="section-discover">
+        <div class="phone-frame" data-img-id="IMAGE-F1"></div>
+        <div class="phone-text">
+          <h3 class="sub-heading">Discover Events</h3>
+          <p class="text-md">Filter by location, skill level, and activity type to find events that fit.</p>
+        </div>
+      </div>
+
+      <div class="phone-row" id="section-details">
+        <div class="phone-frame" data-img-id="IMAGE-F2"></div>
+        <div class="phone-text">
+          <h3 class="sub-heading">Event Details</h3>
+          <p class="text-md">Browse events by location, skill level, and activity type</p>
+        </div>
+      </div>
+
+      <div class="phone-row" id="section-community">
+        <div class="phone-frame" data-img-id="IMAGE-F3"></div>
+        <div class="phone-text">
+          <h3 class="sub-heading">Community Spaces</h3>
+          <p class="text-md">Connect with other attendees before the event even starts.</p>
+        </div>
+      </div>
+
+      <div class="phone-row" id="section-rewards">
+        <div class="phone-frame" data-img-id="IMAGE-F4"></div>
+        <div class="phone-text">
+          <h3 class="sub-heading">Rewards</h3>
+          <p class="text-md">Earn badges and unlock coupons through event participation</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- INITIAL RESEARCH -->
+    <section id="section-research" class="cs-section">
+      <p class="section-label">INITIAL RESEARCH</p>
+      <h2 class="section-heading">We went to the store to find the problem</h2>
+      <p class="text-md">Our brief was open-ended, so we ran four research activities to identify where to focus.</p>
+
+      <div class="friction-grid">
+        <div>
+          <div class="friction-title">Field Observation</div>
+          <div class="friction-body">Conducted an ethnography at the store observing signage, displays, and customer behavior.</div>
+        </div>
+        <div>
+          <div class="friction-title">Interviews</div>
+          <div class="friction-body">Spoke with staff, customers, and stakeholders to understand their relationship with MEC.</div>
+        </div>
+        <div>
+          <div class="friction-title">Secondary Research</div>
+          <div class="friction-body">Analyzed reviews, Reddit threads, and forums to surface broader sentiment and recurring frustrations.</div>
+        </div>
+      </div>
+
+      <div class="cs-placeholder std" data-img-id="IMAGE2"></div>
+
+      <h3 class="sub-heading">MEC has a community problem, not a product problem</h3>
+      <p class="text-md">After conducting a thematic analysis across our field observations, interviews, and secondary research, three recurring themes emerged that shaped our direction.</p>
+
+      <div class="finding-item">
+        <div class="finding-title">Fragmented discovery</div>
+        <div class="finding-body">Event information lived across the website, Instagram, and third-party platforms, creating an inconsistent experience with no single place to find reliable details.</div>
+      </div>
+      <div class="finding-item">
+        <div class="finding-title">Lack of Clarity</div>
+        <div class="finding-body">Key details like required gear, skill level, and host expectations were often missing, increasing hesitation and lowering confidence before signing up.</div>
+      </div>
+      <div class="finding-item">
+        <div class="finding-title">Disconnected from Community</div>
+        <div class="finding-body">Events had no tie to membership benefits or community features, giving members no reason to return and leaving MEC with no way to track engagement.</div>
+      </div>
+
+      <p class="text-md-dark" style="margin-top:32px;">To understand where the experience broke down, we mapped the current user journey from discovering an event to signing up and attending.</p>
+
+      <h3 class="sub-heading-lg">It wasn't just hard to find, it was hard to care about</h3>
+      <p class="text-md-dark">Using Jesse, a persona we created to represent beginner MEC customers, we mapped the end-to-end event experience.</p>
+
+      <div class="cs-placeholder std" data-img-id="IMAGE3"></div>
+
+      <div class="insight-box">
+        Key insight: Even when members stumbled across an event, the lack of detail, community, and follow-through gave them little reason to sign up or come back.
+      </div>
+    </section>
+
+    <!-- CO-DESIGN WORKSHOP -->
+    <section id="section-codesign" class="cs-section">
+      <p class="section-label">CO-DESIGN WORKSHOP</p>
+      <p class="text-md-dark">We held a participatory workshop with MEC stakeholders, which pushed us to reframe our approach to consider both community value and business impact.</p>
+      <div class="cs-placeholder std" data-img-id="IMAGE4"></div>
+      <div class="insight-box">
+        <strong>Key insight</strong>
+        Events needed to support repeat attendance and spending, not just first-time discovery. This is what introduced the idea of a badge and progression system.
+      </div>
+    </section>
+
+    <!-- BUSINESS REFRAME -->
+    <section id="section-reframe" class="cs-section">
+      <p class="section-label">BUSINESS REFRAME</p>
+      <h2 class="section-heading">Community value and business impact are not mutually exclusive</h2>
+      <p class="text-md-dark">A badge and rewards system would motivate members to return while giving MEC the data to justify investing more in events.</p>
+      <div class="cs-placeholder std" data-img-id="IMAGE5"></div>
+    </section>
+
+    <!-- IDEATION -->
+    <section id="section-ideation" class="cs-section">
+      <p class="section-label">IDEATION</p>
+
+      <div class="ideation-grid">
+        <div class="ideation-col">
+          <div class="ideation-label">Improve the website event page</div>
+          <div class="ideation-img" data-img-id="IMAGE6"></div>
+          <div class="ideation-desc">Redesign the existing events section to be easier to find and navigate.</div>
+        </div>
+        <div class="ideation-col">
+          <div class="ideation-label">Physical event card with QR code</div>
+          <div class="ideation-img" data-img-id="IMAGE7"></div>
+          <div class="ideation-desc">Hand out cards in-store that members can scan to explore upcoming events.</div>
+        </div>
+      </div>
+
+      <h2 class="section-heading" style="margin-top:64px;">Neither solved the full problem</h2>
+      <p class="text-md-dark">Improving the website still leaves events buried within a larger retail experience. A physical card increases visibility but does nothing to improve the experience once someone gets there. Neither option addressed the lack of community, clarity, or reason to return.</p>
+
+      <div class="reasoning-block">
+        <p><strong>Discover</strong> — events needed to be front and center, not buried. The home screen immediately surfaces upcoming events. Filter by skill level, activity, and date so beginners like Jesse don't feel overwhelmed.</p>
+        <p><strong>Event details</strong> — members were signing up without knowing what to expect. The details page removes hesitation with an agenda, what to bring, and highlights from past sessions.</p>
+        <p><strong>Community spaces</strong> — first-timers like Jesse were nervous about showing up alone. Post-signup, every event has a community tab for announcements and discussion so attendees can connect before the day arrives.</p>
+        <p><strong>Badges and rewards</strong> — came from the workshop insight that events needed a reason to come back. Attend 5 events, get 10% off. Attend 10, get 20% off. This also gives MEC trackable engagement data to justify investing more in events.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ── Floating Nav ── -->
+  <div class="nav-wrapper">
+    <div class="nav-card" id="navCard">
+      <div class="nav-dropdown" id="navDropdown">
+        <div class="nav-dropdown-inner">
+          <div class="dropdown-list"     id="dropdownList"></div>
+          <div class="preview-container" id="previewContainer"></div>
+        </div>
+      </div>
+      <div class="nav-bar">
+        <div class="nav-item" id="btn-work">
+          Work
+          <svg class="chevron" viewBox="0 0 10 10" fill="none">
+            <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="nav-item" id="btn-about">About</div>
+        <div class="nav-item" id="btn-playground">
+          Playground
+          <svg class="chevron" viewBox="0 0 10 10" fill="none">
+            <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Image slot loader ──
+    const IMAGE_MAP = {
+      'IMAGE1':   'VIDEO ASSETS/MEC/1.png',
+      'IMAGE2':   'VIDEO ASSETS/MEC/2.png',
+      'IMAGE3':   'VIDEO ASSETS/MEC/3.png',
+      'IMAGE4':   'VIDEO ASSETS/MEC/4.png',
+      'IMAGE5':   'VIDEO ASSETS/MEC/5.png',
+      'IMAGE6':   'VIDEO ASSETS/MEC/6.png',
+      'IMAGE7':   'VIDEO ASSETS/MEC/7.png',
+      'IMAGE-F1': 'VIDEO ASSETS/MEC/F1.png',
+      'IMAGE-F2': 'VIDEO ASSETS/MEC/EVENTSDETAILS.mp4',
+      'IMAGE-F3': 'VIDEO ASSETS/MEC/F3.png',
+      'IMAGE-F4': 'VIDEO ASSETS/MEC/F4.png',
+    };
+    document.querySelectorAll('[data-img-id]').forEach(slot => {
+      const id      = slot.getAttribute('data-img-id');
+      const src     = IMAGE_MAP[id];
+      const natural = slot.dataset.fit === 'natural';
+      if (!src) return;
+      slot.style.background = 'none';
+      if (natural) {
+        slot.style.height   = 'auto';
+        slot.style.position = 'static';
+      }
+      if (/\.(mp4|webm|mov)$/i.test(src)) {
+        const vid = document.createElement('video');
+        vid.src = src;
+        vid.autoplay = true; vid.loop = true; vid.muted = true; vid.playsInline = true;
+        vid.style.cssText = natural
+          ? 'width:100%;height:auto;display:block;border-radius:inherit;'
+          : 'width:100%;height:100%;object-fit:cover;display:block;';
+        slot.appendChild(vid);
+      } else {
+        const img = new Image();
+        img.onload = () => {
+          const el = document.createElement('img');
+          el.src = src;
+          el.style.cssText = natural
+            ? 'width:100%;height:auto;display:block;border-radius:inherit;'
+            : 'width:100%;height:100%;object-fit:cover;display:block;';
+          slot.appendChild(el);
+        };
+        img.src = src;
+      }
+    });
+  </script>
+
+  <script>
+    // ── Page transition ──
+    const overlay = document.getElementById('page-overlay');
+
+    function navigateTo(url) {
+      overlay.style.animation  = 'none';
+      overlay.style.opacity    = '1';
+      overlay.style.transition = 'opacity 0.09s ease';
+      overlay.style.pointerEvents = 'all';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+        setTimeout(() => { window.location.href = url; }, 90);
+      }));
+    }
+
+    // ── Cursor ──
+    const cursor = document.getElementById('cursor');
+    cursor.style.opacity = '0';
+    document.addEventListener('mousemove', e => {
+      cursor.style.left    = e.clientX + 'px';
+      cursor.style.top     = e.clientY + 'px';
+      cursor.style.opacity = '1';
+    });
+    const CLICKABLE = 'a, button, .popup-item, .page-nav-bar, .nav-item, .dropdown-item';
+    document.addEventListener('mouseover', e => { if (e.target.closest(CLICKABLE)) cursor.classList.add('is-hovering'); });
+    document.addEventListener('mouseout',  e => { if (e.target.closest(CLICKABLE)) cursor.classList.remove('is-hovering'); });
+
+    // ── Left nav ──
+    const navWrap  = document.getElementById('pageNavWrap');
+    const navPopup = document.getElementById('pageNavPopup');
+    const sections = [
+      document.getElementById('section-overview'),
+      document.getElementById('section-problem'),
+      document.getElementById('section-solution'),
+      document.getElementById('section-research'),
+      document.getElementById('section-codesign'),
+      document.getElementById('section-reframe'),
+      document.getElementById('section-ideation'),
+    ];
+    const navBars   = [...document.querySelectorAll('.page-nav-bar')];
+    const popupItems = [...document.querySelectorAll('.popup-item')];
+
+    window.addEventListener('scroll', () => {
+      navWrap.classList.toggle('is-visible', window.scrollY > window.innerHeight * 0.8);
+      const mid = window.scrollY + window.innerHeight / 2;
+      let active = 0;
+      sections.forEach((s, i) => { if (s && s.offsetTop <= mid) active = i; });
+      navBars.forEach((b, i)   => b.classList.toggle('is-active', i === active));
+      popupItems.forEach((p, i) => p.classList.toggle('is-active', i === active));
+    }, { passive: true });
+
+    let navTimer;
+    navWrap.addEventListener('mouseenter', () => { clearTimeout(navTimer); navPopup.classList.add('is-open'); });
+    navWrap.addEventListener('mouseleave', () => { navTimer = setTimeout(() => navPopup.classList.remove('is-open'), 120); });
+
+    // ── Floating nav ──
+    const MENUS = {
+      work: [
+        { label: 'Food Stash', url: 'foodstash.html' },
+        { label: 'MEC',        url: 'mec.html'       },
+      ],
+      playground: [
+        { label: 'Posters',      url: 'posters.html?filter=posters',     img: 'NAV/Poster.png'       },
+        { label: 'UI Design',    url: 'posters.html?filter=ui',           img: 'NAV/UI Design.png'    },
+        { label: 'Experimental', url: 'posters.html?filter=experimental', img: 'NAV/Experimental.png' },
+        { label: 'Social Media', url: 'posters.html?filter=social',       img: 'NAV/Social Media.png' },
+      ],
+    };
+
+    let openKey = null, activeBox = null, closeTimer = null;
+    const dropdown = document.getElementById('navDropdown');
+    const list     = document.getElementById('dropdownList');
+    const previews = document.getElementById('previewContainer');
+    const navCard  = document.getElementById('navCard');
+
+    function build(key) {
+      list.innerHTML = ''; previews.innerHTML = ''; activeBox = null;
+      MENUS[key].forEach((item, i) => {
+        const el = document.createElement('div');
+        el.className = 'dropdown-item';
+        el.textContent = item.label;
+        el.dataset.idx = i;
+        el.addEventListener('mouseenter', () => {
+          list.classList.add('has-hover');
+          list.querySelectorAll('.dropdown-item').forEach(d => d.classList.remove('item-hovered'));
+          el.classList.add('item-hovered');
+          showBox(i);
+        });
+        el.addEventListener('mouseleave', () => el.classList.remove('item-hovered'));
+        if (item.url) el.addEventListener('click', () => navigateTo(item.url));
+        list.appendChild(el);
+
+        const box = document.createElement('div');
+        box.className = 'preview-box'; box.dataset.idx = i;
+        if (item.img) {
+          const img = document.createElement('img');
+          img.src = item.img;
+          img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;';
+          box.appendChild(img);
+        }
+        previews.appendChild(box);
+      });
+      list.addEventListener('mouseleave', () => {
+        list.classList.remove('has-hover');
+        list.querySelectorAll('.dropdown-item').forEach(d => d.classList.remove('item-hovered'));
+        hideBox();
+      });
+    }
+
+    function showBox(idx) {
+      const target = previews.querySelector(`[data-idx="${idx}"]`);
+      if (!target || activeBox === target) return;
+      if (activeBox) { activeBox.classList.remove('is-active'); activeBox.classList.add('is-leaving'); const p = activeBox; setTimeout(() => p.classList.remove('is-leaving'), 250); }
+      target.classList.remove('is-leaving'); target.classList.add('is-active'); activeBox = target;
+    }
+    function hideBox() {
+      if (!activeBox) return;
+      activeBox.classList.remove('is-active'); activeBox.classList.add('is-leaving');
+      const p = activeBox; setTimeout(() => p.classList.remove('is-leaving'), 250); activeBox = null;
+    }
+
+    function openDropdown(key, btn) {
+      if (openKey === key) return;
+      const currentH = dropdown.offsetHeight;
+      build(key);
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      dropdown.style.transition = 'none';
+      dropdown.style.height     = 'auto';
+      const targetH = dropdown.scrollHeight;
+      dropdown.style.height = (openKey !== null ? currentH : 0) + 'px';
+      dropdown.getBoundingClientRect();
+      dropdown.style.transition = openKey !== null
+        ? 'height 0.35s cubic-bezier(0.34, 1.2, 0.64, 1)'
+        : 'height 0.45s cubic-bezier(0.34, 1.25, 0.64, 1)';
+      dropdown.style.height = targetH + 'px';
+      openKey = key;
+    }
+    function closeDropdown() {
+      if (openKey === null) return;
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('is-active'));
+      hideBox();
+      dropdown.style.transition = 'height 0.18s cubic-bezier(0.4,0,1,1)';
+      dropdown.style.height     = '0px';
+      openKey = null;
+    }
+
+    navCard.addEventListener('mouseleave', () => { closeTimer = setTimeout(closeDropdown, 120); });
+    navCard.addEventListener('mouseenter', () => { clearTimeout(closeTimer); });
+
+    const btnWork       = document.getElementById('btn-work');
+    const btnPlayground = document.getElementById('btn-playground');
+    const btnAbout      = document.getElementById('btn-about');
+
+    btnWork.addEventListener('mouseenter', () => { clearTimeout(closeTimer); openDropdown('work', btnWork); });
+    btnWork.addEventListener('click', () => navigateTo('index.html'));
+    btnPlayground.addEventListener('mouseenter', () => { clearTimeout(closeTimer); openDropdown('playground', btnPlayground); });
+    btnPlayground.addEventListener('click', () => navigateTo('posters.html'));
+    btnAbout.addEventListener('mouseenter', () => { clearTimeout(closeTimer); closeDropdown(); });
+    btnAbout.addEventListener('click', () => navigateTo('about.html'));
+  </script>
+
+</body>
+</html>

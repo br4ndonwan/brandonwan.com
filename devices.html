@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Story — Brandon Wan</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    * { cursor: none !important; }
+
+    #cursor {
+      position: fixed; top: 0; left: 0;
+      width: 12px; height: 12px;
+      background: #0000ff; border-radius: 50%;
+      pointer-events: none; z-index: 99999;
+      transform: translate(-50%, -50%) scale(1);
+      transition: transform 0.2s cubic-bezier(0.34, 1.6, 0.64, 1);
+      will-change: transform;
+    }
+    #cursor.is-hovering { transform: translate(-50%, -50%) scale(2.2); }
+
+    #page-overlay {
+      position: fixed; inset: 0;
+      background: #F7F7F7;
+      z-index: 9990; opacity: 1;
+      pointer-events: none; transition: opacity 0.09s ease;
+    }
+
+    @font-face { font-family:'Geist'; src:url('fonts/Geist-Regular.woff2') format('woff2'); font-weight:400; }
+    @font-face { font-family:'Geist'; src:url('fonts/Geist-Medium.woff2')  format('woff2'); font-weight:500; }
+    @font-face { font-family:'Geist'; src:url('fonts/Geist-SemiBold.woff2') format('woff2'); font-weight:600; }
+
+    body {
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background: #FFFFFF; overflow: hidden; height: 100vh;
+    }
+
+    .stage { position: fixed; inset: 0; overflow: hidden; }
+
+    /* ── Strip ── */
+    .strip-viewport { position: absolute; inset: 0; overflow: hidden; }
+
+    .strip {
+      position: absolute;
+      top: 0; left: 0; height: 100%;
+      display: flex;
+      align-items: flex-end;
+      padding: 0 180px 110px 180px;
+      gap: 56px;
+      will-change: transform;
+    }
+
+    /* ── Device slots ── */
+    .device-slot {
+      flex-shrink: 0;
+      transition:
+        transform 0.55s cubic-bezier(0.32, 0.72, 0, 1),
+        opacity   0.38s ease;
+      will-change: transform, opacity;
+    }
+    .device-slot img {
+      display: block;
+      user-select: none; pointer-events: none;
+    }
+
+    /* Sizes */
+    .device-slot.iphone  img { width: 170px;  height: auto; }
+    .device-slot.iphone[data-idx="0"] img { width: 145px; height: auto; }
+    .device-slot.macbook img { width: 680px;  height: auto; }
+    .device-slot.camera  img { width: 360px;  height: auto; }
+
+    /* Hover lift — only in overview */
+    .stage:not(.is-expanded) .device-slot:hover {
+      transform: translateY(-8px) scale(1.012);
+    }
+
+    /* Expanded states */
+    .stage.is-expanded .device-slot.is-active  { z-index: 20; }
+    .stage.is-expanded .device-slot:not(.is-active) {
+      opacity: 0; pointer-events: none;
+    }
+
+    /* ── Story panel (left side in individual view) ── */
+    .story-panel {
+      position: absolute; left: 0; top: 0;
+      width: 42%; height: 100%;
+      display: flex; align-items: center; justify-content: flex-end;
+      padding: 0 32px 0 64px;
+      pointer-events: none; z-index: 25;
+    }
+
+    .story-entry {
+      position: absolute;
+      max-width: 380px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+    .story-entry.is-active {
+      opacity: 1;
+      transform: translateY(0);
+      position: relative;
+    }
+
+    .story-year {
+      font-size: 12px; font-weight: 400;
+      color: #bbb; margin-bottom: 14px;
+      letter-spacing: 0.04em;
+    }
+    .story-body {
+      font-size: 15px; font-weight: 400;
+      color: #1a1a1a; line-height: 1.75;
+    }
+
+    /* ── Year label ── */
+    #year-label {
+      position: fixed;
+      left: 180px;
+      top: 100px;
+      z-index: 15;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    #year-label.is-hidden { opacity: 0; }
+    .year-text {
+      display: block;
+      font-size: 48px;
+      font-weight: 600;
+      color: #1a1a1a;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+
+    /* ── Hints ── */
+    .back-hint {
+      position: absolute; bottom: 40px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px; color: #c8c8c8;
+      letter-spacing: 0.03em;
+      opacity: 0; pointer-events: none; z-index: 30;
+      transition: opacity 0.4s ease 0.35s;
+      white-space: nowrap;
+    }
+    .stage.is-expanded .back-hint { opacity: 1; }
+
+    /* ── Scroll progress dots ── */
+    .scroll-dots {
+      position: absolute; bottom: 40px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 6px;
+      z-index: 10;
+      transition: opacity 0.3s ease;
+    }
+    .stage.is-expanded .scroll-dots { opacity: 0; }
+    .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #d0d0d0;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+    .dot.active { background: #1a1a1a; transform: scale(1.3); }
+
+    /* ══════════════════════════════
+       FLOATING NAV
+    ══════════════════════════════ */
+    .nav-wrapper {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%); z-index: 1000; width: fit-content;
+    }
+    .nav-card {
+      background: #fff; border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 20px rgba(0,0,0,.10), 0 0 0 .5px rgba(0,0,0,.05);
+      overflow: hidden; width: fit-content;
+    }
+    .nav-dropdown { height: 0; overflow: hidden; }
+    .nav-dropdown-inner { width: 254px; margin: 0 auto; padding: 18px 0 28px; position: relative; }
+    .dropdown-list { display: flex; flex-direction: column; gap: 4px; width: 84px; }
+    .dropdown-item {
+      font-size: 14px; font-weight: 400; color: rgba(78,78,78,.72);
+      cursor: pointer; padding: 2px 0; white-space: nowrap;
+      transform: translateX(0); user-select: none;
+      transition: transform .4s cubic-bezier(.34,1.6,.64,1), opacity .2s ease, color .15s ease;
+    }
+    .dropdown-item.item-hovered { transform: translateX(6px); color: rgba(78,78,78,1); opacity: 1 !important; }
+    .dropdown-list.has-hover .dropdown-item:not(.item-hovered) { opacity: .35; }
+    .preview-container {
+      position: absolute; left: 182px; top: 18px;
+      width: 64px; height: 64px; border-radius: 5px; overflow: hidden;
+    }
+    .preview-box {
+      position: absolute; width: 64px; height: 64px; left: 0; top: 0;
+      opacity: 0; transform: scale(1.06) translateY(4px);
+      transition: opacity .28s cubic-bezier(.4,0,.2,1), transform .42s cubic-bezier(.34,1.2,.64,1);
+      will-change: opacity, transform;
+    }
+    .preview-box.is-active  { opacity: 1; transform: scale(1) translateY(0); }
+    .preview-box.is-leaving { opacity: 0; transform: scale(.97) translateY(-2px); transition: opacity .18s cubic-bezier(.4,0,1,1), transform .22s cubic-bezier(.4,0,1,1); }
+    .nav-bar { display: flex; align-items: center; padding: 2px 6px; gap: 4px; }
+    .nav-item {
+      padding: 10px 16px; font-size: 14px; font-weight: 400; color: #4e4e4e;
+      cursor: pointer; display: flex; align-items: center; gap: 2px;
+      white-space: nowrap; user-select: none;
+      transition: background .2s ease; -webkit-tap-highlight-color: transparent;
+    }
+    #btn-work { border-radius: 24px; } #btn-about { border-radius: 30px; } #btn-playground { border-radius: 36px; }
+    .nav-item.is-active { background: #e9e9e9; }
+    .chevron { width: 10px; height: 10px; flex-shrink: 0; opacity: .6; transition: transform .35s cubic-bezier(.34,1.4,.64,1); }
+    .nav-item.is-active .chevron { transform: rotate(180deg); }
+
+    /* ══════════════════════════════
+       MOBILE NAV OVERLAY
+    ══════════════════════════════ */
+    .mobile-nav-pill { display: none; }
+    .mobile-nav-overlay { display: none; }
+    .mobile-nav-close { display: none; }
+
+    @media (max-width: 768px) {
+      .nav-wrapper { display: none; }
+
+      .mobile-nav-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1001;
+        background: #fff;
+        border-radius: 10px;
+        padding: 12px 22px;
+        font-size: 14px;
+        color: #4e4e4e;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.05);
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        white-space: nowrap;
+      }
+
+      .mobile-nav-overlay {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        inset: 0;
+        background: #fff;
+        z-index: 2000;
+        padding: 52px 28px 120px;
+        overflow-y: auto;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(20px);
+        transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+      }
+      .mobile-nav-overlay.is-open {
+        opacity: 1;
+        pointer-events: all;
+        transform: translateY(0);
+      }
+
+      .mobile-nav-section-label {
+        font-size: 11px;
+        color: #a4a7ae;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin: 32px 0 8px;
+      }
+      .mobile-nav-section-label:first-child { margin-top: 0; }
+
+      .mobile-nav-link {
+        font-size: 17px;
+        font-weight: 500;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        text-decoration: none;
+        letter-spacing: -0.01em;
+      }
+      .mobile-nav-link.is-current { color: #b0b0b0; }
+
+      .mobile-nav-sub {
+        font-size: 17px;
+        font-weight: 400;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        letter-spacing: -0.01em;
+      }
+      .mobile-nav-sub:last-child { border-bottom: none; }
+      .mobile-nav-sub.is-current { color: #b0b0b0; }
+
+      .mobile-nav-thumb {
+        width: 52px;
+        height: 52px;
+        border-radius: 10px;
+        object-fit: cover;
+        flex-shrink: 0;
+        background: #f0f0f0;
+      }
+
+      .mobile-nav-close {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2001;
+        background: #fff;
+        border-radius: 10px;
+        padding: 12px 22px;
+        font-size: 14px;
+        color: #4e4e4e;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.05);
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+      .mobile-nav-close.is-open {
+        opacity: 1;
+        pointer-events: all;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="page-overlay"></div>
+
+<div class="stage" id="stage">
+
+  <!-- ── Year label ── -->
+  <div id="year-label"><span class="year-text">2015</span></div>
+
+  <!-- ── Device strip ── -->
+  <div class="strip-viewport">
+    <div class="strip" id="strip">
+
+      <div class="device-slot iphone" data-idx="0" data-scale="0.78">
+        <img src="ABOUT/Frame 717.png" alt="">
+      </div>
+
+      <div class="device-slot macbook" data-idx="1">
+        <img src="ABOUT/Frame 721.png" alt="">
+      </div>
+
+      <div class="device-slot iphone" data-idx="2">
+        <img src="ABOUT/Frame 718.png" alt="">
+      </div>
+
+      <div class="device-slot macbook" data-idx="3">
+        <img src="ABOUT/Frame 719.png" alt="">
+      </div>
+
+      <div class="device-slot iphone" data-idx="4">
+        <img src="ABOUT/Frame 716.png" alt="">
+      </div>
+
+      <div class="device-slot camera" data-idx="5">
+        <img src="ABOUT/Frame 720.png" alt="">
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Story entries ── -->
+  <div class="story-panel" id="storyPanel">
+
+    <div class="story-entry" data-story="0">
+      <div class="story-year">2015</div>
+      <p class="story-body">
+        For my birthday I got my hands on a used iPhone 5 from Craigslist, my dad never believed in buying new electronics. It was the first time I owned a device that was truly mine and had free access to the internet. I found Instagram and started running accounts around my interests, one of them being a hockey account. This is where I began getting into graphic design.
+      </p>
+    </div>
+
+    <div class="story-entry" data-story="1">
+      <div class="story-year">2017</div>
+      <p class="story-body">
+        My friends and I played hockey in my garage every week, and one day I stole my dad's camera and started filming. That's how "NHL Production" was born, not exactly NHL level, but it's where I learned to edit using cracked Final Cut, Google Slides, and a pirated Photoshop just to make it work.
+      </p>
+    </div>
+
+    <div class="story-entry" data-story="2">
+      <div class="story-year">2018</div>
+      <p class="story-body">
+        On a hot summer day, deep in my Instagram explore page, I stumbled onto a style of video editing that felt fluid and alive and I knew I had to try it. I jumped into After Effects, made edits of my favorite rappers, and built a following of 6k before I burned out. It felt like wasted time at the time, but little did I know this would eventually lead me to finding my career path.
+      </p>
+    </div>
+
+    <div class="story-entry" data-story="3">
+      <div class="story-year">2020</div>
+      <p class="story-body">
+        Covid turned my days into a loop of gaming, eating, and sleeping with Fortnite being the only thing keeping me sane. When Fortnite montage edits started blowing up, I taught myself Premiere Pro overnight just to make my own. This is also when I started rocking the #0000FF profile picture, which became a part of my brand.
+      </p>
+    </div>
+
+    <div class="story-entry" data-story="4">
+      <div class="story-year">2021</div>
+      <p class="story-body">
+        I enrolled in Computer Science at SFU thinking I'd be building apps, not realizing what I actually wanted was to design them. A friend mentioned IAT 100 used After Effects, and because of all the time I put into it back in 2018, I knew I would enjoy it so I took it and fell in love. I switched to Interactive Arts and Technology and never looked back.
+      </p>
+    </div>
+
+    <div class="story-entry" data-story="5">
+      <div class="story-year">2022</div>
+      <p class="story-body">
+        On my 22nd birthday, I committed to vlogging my life for 365 days, using a mini design project as the anchor for each video. It only lasted a month as a vlog, but I kept designing for the entire year. Looking back at where I started versus where I finished is one of the most satisfying things I've ever felt.
+      </p>
+    </div>
+
+  </div>
+
+  <div class="scroll-dots" id="scrollDots">
+    <div class="dot active"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <div class="back-hint">scroll ↑ to go back</div>
+
+</div>
+
+<!-- ══ Floating Nav ══ -->
+<div class="nav-wrapper">
+  <div class="nav-card" id="navCard">
+    <div class="nav-dropdown" id="navDropdown">
+      <div class="nav-dropdown-inner">
+        <div class="dropdown-list"     id="dropdownList"></div>
+        <div class="preview-container" id="previewContainer"></div>
+      </div>
+    </div>
+    <div class="nav-bar">
+      <div class="nav-item" id="btn-work">Work
+        <svg class="chevron" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="nav-item" id="btn-about">About</div>
+      <div class="nav-item" id="btn-playground">Playground
+        <svg class="chevron" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- Mobile nav pill -->
+  <div class="mobile-nav-pill" id="mobileNavPill">
+    Playground
+    <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
+      <path d="M1 1h12M1 5h12M1 9h12" stroke="#4e4e4e" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Mobile nav overlay -->
+  <div class="mobile-nav-overlay" id="mobileNavOverlay">
+    <p class="mobile-nav-section-label">Work</p>
+    <span class="mobile-nav-link" onclick="mobileNavigate('foodstash.html')">Food Stash</span>
+    <span class="mobile-nav-link" onclick="mobileNavigate('mec.html')">MEC</span>
+
+    <p class="mobile-nav-section-label">About</p>
+    <span class="mobile-nav-link" onclick="mobileNavigate('about.html')">About</span>
+
+    <p class="mobile-nav-section-label">Playground</p>
+    <span class="mobile-nav-sub is-current" onclick="mobileNavigate('devices.html')">Story</span>
+    <span class="mobile-nav-sub" onclick="mobileNavigate('posters.html')">All</span>
+    <span class="mobile-nav-sub" onclick="mobileNavigate('posters.html?filter=posters')">Posters</span>
+    <span class="mobile-nav-sub" onclick="mobileNavigate('posters.html?filter=ui')">UI Design</span>
+    <span class="mobile-nav-sub" onclick="mobileNavigate('posters.html?filter=experimental')">Experimental</span>
+    <span class="mobile-nav-sub" onclick="mobileNavigate('posters.html?filter=social')">Social Media</span>
+  </div>
+
+  <!-- Mobile close pill -->
+  <div class="mobile-nav-close" id="mobileNavClose">
+    Playground
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+      <path d="M1 1l10 10M11 1L1 11" stroke="#4e4e4e" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+<script>
+  // ── Page fade ──
+  const overlay = document.getElementById('page-overlay');
+  overlay.style.transition = 'opacity 1.5s ease';
+  requestAnimationFrame(() => requestAnimationFrame(() => { overlay.style.opacity = '0'; }));
+
+  function navigateTo(url) {
+    overlay.style.transition = 'opacity 0.09s ease';
+    overlay.style.pointerEvents = 'all';
+    overlay.style.opacity = '1';
+    setTimeout(() => { window.location.href = url; }, 90);
+  }
+
+  // ── Cursor ──
+  const cursor = document.getElementById('cursor');
+  cursor.style.opacity = '0';
+  let mouseX = -1;
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+    cursor.style.opacity = '1';
+    mouseX = e.clientX;
+  });
+  const CLICKABLE = 'a, button, .device-slot, .nav-item, .dropdown-item';
+  document.addEventListener('mouseover', e => { if (e.target.closest(CLICKABLE)) cursor.classList.add('is-hovering'); });
+  document.addEventListener('mouseout',  e => { if (e.target.closest(CLICKABLE)) cursor.classList.remove('is-hovering'); });
+
+  // ══════════════════════════════════════════════
+  //  STRIP SCROLL
+  // ══════════════════════════════════════════════
+  const stage       = document.getElementById('stage');
+  const strip       = document.getElementById('strip');
+  const deviceSlots = [...document.querySelectorAll('.device-slot')];
+  const storyEntries= [...document.querySelectorAll('.story-entry')];
+  const dots        = [...document.querySelectorAll('.dot')];
+
+  let targetX        = 0;
+  let currentX       = 0;
+  let maxScroll      = 0;
+
+  function getDeviceColumn() {
+    if (mouseX < 0) return -1;
+    for (let i = 0; i < deviceSlots.length; i++) {
+      const r = deviceSlots[i].getBoundingClientRect();
+      if (mouseX >= r.left && mouseX <= r.right) return i;
+    }
+    return -1;
+  }
+
+  let expandedIdx    = -1;
+  let isAnimating    = false;
+  let switchCooldown = false;
+  let horizAccum     = 0;
+  let scrollAccum    = 0;
+
+  // ── Expand scrub state ──
+  let gestureActive         = false;
+  let gestureIdx            = -1;
+  let gestureProgress       = 0;
+  let gestureProgressSmooth = 0;
+  let gestureScroll         = 0;
+  let gestureData           = null;
+  let gestureTimer          = null;
+  const GESTURE_FULL   = 300;
+  const GESTURE_COMMIT = 0.42;
+  const GESTURE_IDLE   = 250;
+
+  function computeMax() {
+    maxScroll = Math.max(0, strip.scrollWidth - window.innerWidth);
+  }
+
+  function hardReset() {
+    isAnimating = false;
+    switchCooldown = false;
+    expandedIdx = -1;
+    gestureActive = false;
+    gestureIdx = -1;
+    gestureData = null;
+    gestureScroll = 0;
+    gestureProgress = 0;
+    gestureProgressSmooth = 0;
+    clearTimeout(gestureTimer);
+    deviceSlots.forEach(s => {
+      s.style.cssText = '';
+      s.classList.remove('is-active');
+    });
+    stage.classList.remove('is-expanded');
+    storyEntries.forEach(e => e.classList.remove('is-active'));
+    targetX = Math.max(0, Math.min(maxScroll, targetX));
+    currentX = targetX;
+    strip.style.transform = `translateX(${-currentX}px)`;
+  }
+
+  let resizeDebounce = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeDebounce);
+    resizeDebounce = setTimeout(() => {
+      const prevMax = maxScroll;
+      computeMax();
+      // Only clamp targetX if maxScroll meaningfully changed
+      targetX = Math.max(0, Math.min(maxScroll, targetX));
+      // Only snap currentX if we're idle (not mid-scroll) and the position
+      // is actually out of bounds — avoids jumping during gestures
+      if (!isAnimating && !gestureActive) {
+        currentX = Math.max(0, Math.min(maxScroll, currentX));
+      }
+
+      if (isAnimating || gestureActive) { hardReset(); return; }
+
+      if (expandedIdx !== -1) {
+        const slot = deviceSlots[expandedIdx];
+        slot.style.transition = 'none';
+        slot.style.transform  = '';
+        slot.getBoundingClientRect();
+        const { tx, ty, scale, deviceLeftEdge } = computeExpandTransform(slot);
+        slot.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+        applyStoryPanelWidth(deviceLeftEdge);
+      }
+    }, 120);
+  });
+
+  window.addEventListener('load', computeMax);
+  setTimeout(computeMax, 300);
+
+  // ── Year label ──
+  const DEVICE_YEARS = ['2015', '2016', '2018', '2020', '2022', '2025'];
+  const yearLabel = document.getElementById('year-label');
+  let displayedYearIdx = 0;
+
+  function rollYear(newIdx) {
+    if (newIdx === displayedYearIdx || newIdx < 0 || newIdx >= DEVICE_YEARS.length) return;
+    const dir = newIdx > displayedYearIdx ? 1 : -1;
+    displayedYearIdx = newIdx;
+
+    const outgoing = yearLabel.querySelector('.year-text');
+    outgoing.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1), opacity 0.22s ease';
+    outgoing.style.transform  = `translateY(${dir < 0 ? '18px' : '-18px'})`;
+    outgoing.style.opacity    = '0';
+
+    const incoming = document.createElement('span');
+    incoming.className = 'year-text';
+    incoming.textContent = DEVICE_YEARS[newIdx];
+    incoming.style.cssText = `position:absolute; top:0; left:0; transform:translateY(${dir > 0 ? '18px' : '-18px'}); opacity:0;`;
+    yearLabel.appendChild(incoming);
+
+    // Make label relatively positioned so absolute child stacks correctly
+    yearLabel.style.position = 'fixed';
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      incoming.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1), opacity 0.22s ease';
+      incoming.style.transform  = 'translateY(0)';
+      incoming.style.opacity    = '1';
+    }));
+
+    setTimeout(() => {
+      outgoing.remove();
+      incoming.style.position = incoming.style.top = incoming.style.left = '';
+    }, 340);
+  }
+
+  // Smooth scroll + gesture scrub RAF loop
+  (function tick() {
+    requestAnimationFrame(tick);
+
+    if (gestureActive && gestureData) {
+      const dp = (gestureProgress - gestureProgressSmooth) * 0.14;
+      if (Math.abs(dp) > 0.0005) {
+        gestureProgressSmooth += dp;
+        applyGestureProgress(gestureProgressSmooth);
+      }
+    }
+
+    if (expandedIdx !== -1 || gestureActive) return;
+    const dx = (targetX - currentX) * 0.10;
+    if (Math.abs(dx) > 0.1) {
+      currentX += dx;
+      strip.style.transform = `translateX(${-currentX}px)`;
+      updateDots();
+      // Update year based on which device is closest to the left edge of the viewport
+      if (maxScroll > 0) {
+        const idx = Math.round((currentX / maxScroll) * (DEVICE_YEARS.length - 1));
+        rollYear(Math.max(0, Math.min(DEVICE_YEARS.length - 1, idx)));
+      }
+    }
+  })();
+
+  function updateDots() {
+    const progress = maxScroll > 0 ? currentX / maxScroll : 0;
+    const active = Math.round(progress * (dots.length - 1));
+    dots.forEach((d, i) => d.classList.toggle('active', i === active));
+  }
+
+  // ══════════════════════════════════════════════
+  //  SCRUB GESTURE HELPERS
+  // ══════════════════════════════════════════════
+  function easeOutQuad(t) { return 1 - (1 - t) * (1 - t); }
+
+  function applyGestureProgress(p) {
+    if (!gestureData) return;
+    const { tx, ty, scale, deviceLeftEdge } = gestureData;
+    const e = easeOutQuad(p);
+
+    const slot = deviceSlots[gestureIdx];
+    slot.style.transition = 'none';
+    slot.style.transform  = `translate(${tx * e}px, ${ty * e}px) scale(${1 + (scale - 1) * e})`;
+
+    deviceSlots.forEach((s, i) => {
+      if (i !== gestureIdx) { s.style.transition = 'none'; s.style.opacity = String(1 - e); }
+    });
+
+    const entry = document.querySelector(`.story-entry[data-story="${gestureIdx}"]`);
+    if (entry) { entry.style.transition = 'none'; entry.style.opacity = String(e); }
+
+    applyStoryPanelWidth(deviceLeftEdge);
+  }
+
+  function commitGesture() {
+    if (!gestureActive) return;
+    gestureActive = false;
+    clearTimeout(gestureTimer);
+    isAnimating = true;
+
+    const slot = deviceSlots[gestureIdx];
+    const { tx, ty, scale, deviceLeftEdge } = gestureData;
+
+    slot.style.transition = 'transform 1.0s cubic-bezier(0.22, 1, 0.36, 1)';
+    slot.style.transform  = `translate(${tx}px, ${ty}px) scale(${scale})`;
+
+    deviceSlots.forEach((s, i) => {
+      if (i !== gestureIdx) { s.style.transition = 'opacity 0.2s ease'; s.style.opacity = '0'; }
+    });
+
+    const entry = document.querySelector(`.story-entry[data-story="${gestureIdx}"]`);
+    if (entry) { entry.style.transition = ''; entry.style.opacity = ''; entry.classList.add('is-active'); }
+
+    stage.classList.add('is-expanded');
+    slot.classList.add('is-active');
+    expandedIdx = gestureIdx;
+
+    gestureIdx = -1; gestureData = null; gestureScroll = 0; gestureProgress = 0; gestureProgressSmooth = 0;
+
+    setTimeout(() => {
+      deviceSlots.forEach(s => {
+        if (!s.classList.contains('is-active')) { s.style.transition = ''; s.style.opacity = ''; }
+      });
+      isAnimating = false;
+    }, 350);
+  }
+
+  function revertGesture() {
+    if (!gestureActive) return;
+    gestureActive = false;
+    clearTimeout(gestureTimer);
+
+    const slot  = deviceSlots[gestureIdx];
+    const entry = document.querySelector(`.story-entry[data-story="${gestureIdx}"]`);
+
+    slot.style.transition = 'transform 0.45s cubic-bezier(0.34,1.56,0.64,1)';
+    slot.style.transform  = '';
+
+    deviceSlots.forEach((s, i) => {
+      if (i !== gestureIdx) { s.style.transition = 'opacity 0.3s ease'; s.style.opacity = ''; }
+    });
+
+    if (entry) { entry.style.transition = 'opacity 0.2s ease'; entry.style.opacity = '0'; }
+
+    const idx = gestureIdx;
+    gestureIdx = -1; gestureData = null; gestureScroll = 0; gestureProgress = 0; gestureProgressSmooth = 0;
+
+    setTimeout(() => {
+      deviceSlots.forEach(s => { s.style.transition = ''; });
+      const e2 = document.querySelector(`.story-entry[data-story="${idx}"]`);
+      if (e2) { e2.style.transition = ''; e2.style.opacity = ''; }
+    }, 460);
+  }
+
+  function onGestureIdle() {
+    if (!gestureActive) return;
+    if (gestureProgress >= GESTURE_COMMIT) commitGesture();
+    else revertGesture();
+  }
+
+  // ══════════════════════════════════════════════
+  //  EXPAND / COLLAPSE / SWITCH
+  // ══════════════════════════════════════════════
+  const storyPanel = document.getElementById('storyPanel');
+
+  function computeExpandTransform(slot) {
+    const rect  = slot.getBoundingClientRect();
+    const cx    = rect.left + rect.width  / 2;
+    const cy    = rect.top  + rect.height / 2;
+    const tCX   = window.innerWidth  * 0.65;
+    const tCY   = window.innerHeight * 0.50;
+    const maxH     = window.innerHeight * 0.65;
+    const maxW     = window.innerWidth  * 0.52;
+    const scaleMod = parseFloat(slot.dataset.scale || '1');
+    const scale    = Math.min(maxH / rect.height, maxW / rect.width) * scaleMod;
+    const deviceLeftEdge = tCX - (rect.width * scale / 2);
+    return { tx: tCX - cx, ty: tCY - cy, scale, deviceLeftEdge };
+  }
+
+  function applyStoryPanelWidth(deviceLeftEdge) {
+    storyPanel.style.width = Math.max(180, deviceLeftEdge) + 'px';
+  }
+
+  function expandDevice(idx) {
+    if (isAnimating || expandedIdx !== -1) return;
+    isAnimating = true;
+    computeMax();
+
+    const slot = deviceSlots[idx];
+    const { tx, ty, scale, deviceLeftEdge } = computeExpandTransform(slot);
+
+    slot.style.transition = 'transform 0.85s cubic-bezier(0.22, 1, 0.36, 1)';
+    slot.style.transform  = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    applyStoryPanelWidth(deviceLeftEdge);
+
+    stage.classList.add('is-expanded');
+    slot.classList.add('is-active');
+    yearLabel.classList.add('is-hidden');
+
+    storyEntries.forEach(e => e.classList.remove('is-active'));
+    const entry = document.querySelector(`.story-entry[data-story="${idx}"]`);
+    if (entry) entry.classList.add('is-active');
+
+    expandedIdx = idx;
+    setTimeout(() => {
+      slot.style.transition = '';
+      isAnimating = false;
+    }, 640);
+  }
+
+  function collapseDevice() {
+    if (isAnimating || expandedIdx === -1) return;
+    isAnimating = true;
+    gestureAxis = null;
+
+    storyEntries.forEach(e => e.classList.remove('is-active'));
+
+    const slot          = deviceSlots[expandedIdx];
+    const collapsingIdx = expandedIdx;
+
+    // Active device springs back to strip position
+    slot.style.transition = 'transform 0.62s cubic-bezier(0.34, 1.52, 0.64, 1)';
+    slot.style.transform  = '';
+
+    // Siblings: staggered bounce wave
+    deviceSlots.forEach((s, i) => {
+      if (i === collapsingIdx) return;
+      const dist  = Math.abs(i - collapsingIdx);
+      const delay = dist === 1 ? 55 : dist === 2 ? 120 : 185;
+
+      setTimeout(() => {
+        s.style.transition = 'none';
+        s.style.transform  = 'translateY(-10px)';
+        s.style.opacity    = '0';
+
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          s.style.transition = 'transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.32s ease';
+          s.style.transform  = '';
+          s.style.opacity    = '1';
+        }));
+      }, delay);
+    });
+
+    // Instantly reposition strip to show the device we're collapsing back to
+    const slotCenter = slot.offsetLeft + slot.offsetWidth / 2;
+    currentX = targetX = Math.max(0, Math.min(maxScroll, slotCenter - window.innerWidth / 2));
+    strip.style.transform = `translateX(${-currentX}px)`;
+
+    setTimeout(() => {
+      slot.classList.remove('is-active');
+      stage.classList.remove('is-expanded');
+      expandedIdx = -1;
+      deviceSlots.forEach(s => {
+        s.style.transition = '';
+        s.style.opacity    = '';
+        s.style.transform  = '';
+      });
+      // Sync year to the device we collapsed back to
+      const idx = Math.max(0, Math.min(DEVICE_YEARS.length - 1, Math.round((currentX / maxScroll) * (DEVICE_YEARS.length - 1))));
+      displayedYearIdx = idx;
+      yearLabel.querySelector('.year-text').textContent = DEVICE_YEARS[idx];
+      yearLabel.classList.remove('is-hidden');
+      isAnimating = false;
+    }, 820);
+  }
+
+  function switchDevice(dir) {
+    if (switchCooldown || isAnimating || expandedIdx === -1) return;
+    const nextIdx = expandedIdx + dir;
+    if (nextIdx < 0 || nextIdx >= deviceSlots.length) return;
+    switchCooldown = true;
+    isAnimating    = true;
+    horizAccum     = 0;
+    gestureAxis    = null;
+    setTimeout(() => { switchCooldown = false; }, SWITCH_COOLDOWN);
+
+    storyEntries.forEach(e => e.classList.remove('is-active'));
+
+    const curSlot = deviceSlots[expandedIdx];
+    const nxtSlot = deviceSlots[nextIdx];
+
+    curSlot.style.transition = 'opacity 0.2s ease';
+    curSlot.style.opacity    = '0';
+
+    setTimeout(() => {
+      curSlot.style.transition = 'none';
+      curSlot.style.transform  = '';
+      curSlot.style.opacity    = '0';
+      curSlot.classList.remove('is-active');
+
+      const { tx: nTx, ty: nTy, scale: nScale, deviceLeftEdge: nLeftEdge } = computeExpandTransform(nxtSlot);
+      applyStoryPanelWidth(nLeftEdge);
+
+      const slideIn = dir > 0 ? 60 : -60;
+      nxtSlot.style.transition = 'none';
+      nxtSlot.style.transform  = `translate(${nTx + slideIn}px, ${nTy}px) scale(${nScale * 0.94})`;
+      nxtSlot.style.opacity    = '0';
+      nxtSlot.classList.add('is-active');
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        nxtSlot.style.transition = 'transform 0.45s cubic-bezier(0.32,0.72,0,1), opacity 0.3s ease';
+        nxtSlot.style.transform  = `translate(${nTx}px, ${nTy}px) scale(${nScale})`;
+        nxtSlot.style.opacity    = '';
+
+        requestAnimationFrame(() => {
+          curSlot.style.transition = '';
+          curSlot.style.opacity    = '';
+        });
+      }));
+
+      expandedIdx = nextIdx;
+
+      setTimeout(() => {
+        const entry = document.querySelector(`.story-entry[data-story="${nextIdx}"]`);
+        if (entry) entry.classList.add('is-active');
+        isAnimating = false;
+      }, 200);
+    }, 220);
+  }
+
+  // ══════════════════════════════════════════════
+  //  WHEEL
+  // ══════════════════════════════════════════════
+  const EXPAND_THRESHOLD = 60;
+  const SWITCH_THRESHOLD = 80;
+  const SWITCH_COOLDOWN  = 700;
+
+  let gestureAxis = null;
+  let gestureAxisTimer = null;
+  function resetGestureAxis() { gestureAxis = null; }
+
+  // Prevent default scroll anywhere on the page (catches events over nav card etc.)
+  document.addEventListener('wheel', e => { e.preventDefault(); }, { passive: false });
+
+  stage.addEventListener('wheel', e => {
+    e.preventDefault();
+
+    const absX = Math.abs(e.deltaX);
+    const absY = Math.abs(e.deltaY);
+
+    if (expandedIdx !== -1) {
+      if (!gestureAxis && (absX > 8 || absY > 8)) {
+        gestureAxis = absX > absY ? 'h' : 'v';
+      }
+      clearTimeout(gestureAxisTimer);
+      gestureAxisTimer = setTimeout(resetGestureAxis, 300);
+
+      if (gestureAxis === 'h') {
+        if (switchCooldown) { horizAccum = 0; return; }
+        horizAccum += e.deltaX;
+        if (horizAccum > SWITCH_THRESHOLD) {
+          horizAccum = 0; switchDevice(+1);
+        } else if (horizAccum < -SWITCH_THRESHOLD) {
+          horizAccum = 0; switchDevice(-1);
+        }
+      } else if (gestureAxis === 'v') {
+        if (!isAnimating && e.deltaY < -20) {
+          horizAccum = 0;
+          gestureAxis = null;
+          collapseDevice();
+        }
+      }
+      return;
+    }
+
+    gestureAxis = null;
+    horizAccum  = 0;
+
+    const primaryHorizontal = absX > absY;
+
+    const col = getDeviceColumn();
+    if (!primaryHorizontal && (gestureActive || (col !== -1 && e.deltaY > 0))) {
+      if (!gestureActive) {
+        gestureActive         = true;
+        gestureIdx            = col;
+        gestureScroll         = 0;
+        gestureProgress       = 0;
+        gestureProgressSmooth = 0;
+        gestureData           = computeExpandTransform(deviceSlots[col]);
+      }
+      gestureScroll   = Math.max(0, gestureScroll + e.deltaY);
+      gestureProgress = Math.min(1, gestureScroll / GESTURE_FULL);
+      clearTimeout(gestureTimer);
+      if (gestureProgress >= 1) {
+        commitGesture();
+      } else {
+        gestureTimer = setTimeout(onGestureIdle, GESTURE_IDLE);
+      }
+    } else if (!gestureActive) {
+      scrollAccum = 0;
+      const delta = primaryHorizontal ? e.deltaX : e.deltaY * 0.6;
+      targetX = Math.max(0, Math.min(maxScroll, targetX + delta));
+    }
+  }, { passive: false });
+
+  // Click to expand/collapse
+  deviceSlots.forEach((slot, i) => {
+    slot.addEventListener('click', () => {
+      if (expandedIdx === -1) expandDevice(i);
+      else if (expandedIdx === i) collapseDevice();
+    });
+  });
+
+  // ESC to collapse
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') collapseDevice(); });
+
+  // ══════════════════════════════════════════════
+  //  FLOATING NAV
+  // ══════════════════════════════════════════════
+  const MENUS = {
+    work: [
+      { label: 'Food Stash', url: 'foodstash.html' },
+      { label: 'MEC' },
+    ],
+    playground: [
+      { label: 'Posters',      url: 'posters.html?filter=posters',     img: 'NAV/Poster.png'       },
+      { label: 'UI Design',    url: 'posters.html?filter=ui',           img: 'NAV/UI Design.png'    },
+      { label: 'Experimental', url: 'posters.html?filter=experimental', img: 'NAV/Experimental.png' },
+      { label: 'Social Media', url: 'posters.html?filter=social',       img: 'NAV/Social Media.png' },
+    ],
+  };
+
+  let openKey = null, activeBox = null, closeTimer = null;
+  const dropdown = document.getElementById('navDropdown');
+  const list     = document.getElementById('dropdownList');
+  const previews = document.getElementById('previewContainer');
+  const navCard  = document.getElementById('navCard');
+
+  function build(key) {
+    list.innerHTML = ''; previews.innerHTML = ''; activeBox = null;
+    MENUS[key].forEach((item, i) => {
+      const el = document.createElement('div');
+      el.className = 'dropdown-item'; el.textContent = item.label; el.dataset.idx = i;
+      el.addEventListener('mouseenter', () => {
+        list.classList.add('has-hover');
+        list.querySelectorAll('.dropdown-item').forEach(d => d.classList.remove('item-hovered'));
+        el.classList.add('item-hovered'); showBox(i);
+      });
+      el.addEventListener('mouseleave', () => el.classList.remove('item-hovered'));
+      if (item.url) el.addEventListener('click', () => navigateTo(item.url));
+      list.appendChild(el);
+      const box = document.createElement('div');
+      box.className = 'preview-box'; box.dataset.idx = i;
+      if (item.img) {
+        const img = document.createElement('img');
+        img.src = item.img;
+        img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;';
+        box.appendChild(img);
+      }
+      previews.appendChild(box);
+    });
+    list.addEventListener('mouseleave', () => {
+      list.classList.remove('has-hover');
+      list.querySelectorAll('.dropdown-item').forEach(d => d.classList.remove('item-hovered'));
+      hideBox();
+    });
+  }
+
+  function showBox(idx) {
+    const t = previews.querySelector(`[data-idx="${idx}"]`);
+    if (!t || activeBox === t) return;
+    if (activeBox) { activeBox.classList.remove('is-active'); activeBox.classList.add('is-leaving'); const p=activeBox; setTimeout(()=>p.classList.remove('is-leaving'),250); }
+    t.classList.remove('is-leaving'); t.classList.add('is-active'); activeBox = t;
+  }
+  function hideBox() {
+    if (!activeBox) return;
+    activeBox.classList.remove('is-active'); activeBox.classList.add('is-leaving');
+    const p = activeBox; setTimeout(() => p.classList.remove('is-leaving'), 250); activeBox = null;
+  }
+  function openDropdown(key, btn) {
+    if (openKey === key) return;
+    const cH = dropdown.offsetHeight; build(key);
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    dropdown.style.transition = 'none'; dropdown.style.height = 'auto';
+    const tH = dropdown.scrollHeight;
+    dropdown.style.height = (openKey !== null ? cH : 0) + 'px';
+    dropdown.getBoundingClientRect();
+    dropdown.style.transition = openKey !== null ? 'height .35s cubic-bezier(.34,1.2,.64,1)' : 'height .45s cubic-bezier(.34,1.25,.64,1)';
+    dropdown.style.height = tH + 'px'; openKey = key;
+  }
+  function closeDropdown() {
+    if (openKey === null) return;
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('is-active'));
+    hideBox(); dropdown.style.transition = 'height .18s cubic-bezier(.4,0,1,1)';
+    dropdown.style.height = '0px'; openKey = null;
+  }
+
+  navCard.addEventListener('mouseleave', () => { closeTimer = setTimeout(closeDropdown, 120); });
+  navCard.addEventListener('mouseenter', () => { clearTimeout(closeTimer); });
+
+  const btnWork       = document.getElementById('btn-work');
+  const btnPlayground = document.getElementById('btn-playground');
+  const btnAbout      = document.getElementById('btn-about');
+
+  btnWork.addEventListener('mouseenter',       () => { clearTimeout(closeTimer); openDropdown('work', btnWork); });
+  btnWork.addEventListener('click',            () => navigateTo('index.html'));
+  btnPlayground.addEventListener('mouseenter', () => { clearTimeout(closeTimer); openDropdown('playground', btnPlayground); });
+  btnPlayground.addEventListener('click',      () => navigateTo('posters.html'));
+  btnAbout.addEventListener('mouseenter',      () => { clearTimeout(closeTimer); closeDropdown(); });
+  btnAbout.addEventListener('click',           () => navigateTo('about.html'));
+
+    // ── Mobile nav overlay ──
+    const mobileNavPill    = document.getElementById('mobileNavPill');
+    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+    const mobileNavClose   = document.getElementById('mobileNavClose');
+
+    function openMobileNav() {
+      mobileNavOverlay.classList.add('is-open');
+      mobileNavClose.classList.add('is-open');
+      mobileNavPill.style.opacity = '0';
+      mobileNavPill.style.pointerEvents = 'none';
+    }
+
+    function closeMobileNav() {
+      mobileNavOverlay.classList.remove('is-open');
+      mobileNavClose.classList.remove('is-open');
+      mobileNavPill.style.opacity = '1';
+      mobileNavPill.style.pointerEvents = 'auto';
+    }
+
+    function mobileNavigate(url) {
+      closeMobileNav();
+      setTimeout(() => navigateTo(url), 80);
+    }
+
+    if (mobileNavPill)  mobileNavPill.addEventListener('click', openMobileNav);
+    if (mobileNavClose) mobileNavClose.addEventListener('click', closeMobileNav);
+</script>
+
+</body>
+</html>

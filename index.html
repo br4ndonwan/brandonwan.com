@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brandon Wan</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* ── Page transition overlay ── */
+    #page-overlay {
+      position: fixed;
+      inset: 0;
+      background: #F7F7F7;
+      z-index: 9990;
+      opacity: 1;
+      pointer-events: none;
+      transition: opacity 0.1s ease;
+    }
+
+    /* Hide default cursor everywhere */
+    * { cursor: none !important; }
+
+    /* ── Custom cursor ── */
+    #cursor {
+      position: fixed;
+      top: 0; left: 0;
+      width: 12px;
+      height: 12px;
+      background: #0000ff;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 99999;
+      transform: translate(-50%, -50%) scale(1);
+      transition: transform 0.2s cubic-bezier(0.34, 1.6, 0.64, 1);
+      will-change: transform;
+    }
+    #cursor.is-hovering {
+      transform: translate(-50%, -50%) scale(2.2);
+    }
+
+    @font-face {
+      font-family: 'Geist';
+      src: url('fonts/Geist-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Geist';
+      src: url('fonts/Geist-Medium.woff2') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Geist';
+      src: url('fonts/Geist-SemiBold.woff2') format('woff2');
+      font-weight: 600;
+      font-style: normal;
+    }
+
+    body {
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background: #FFFFFF;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    .page-wrap {
+      padding: 32px 32px 140px;
+    }
+
+    /* ── Header ── */
+    .header { padding-bottom: 0; padding-left: 16px; padding-right: 16px; position: relative; }
+    .header-left { display: flex; flex-direction: column; }
+    .header-line { display: flex; align-items: center; gap: 6px; }
+    .header-pfp  { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; display: block; flex-shrink: 0; }
+    .header-name { font-size: 14px; font-weight: 500; color: #000; }
+    .header-sub  { font-size: 14px; font-weight: 400; color: #848484; margin-top: 3px; }
+    .header-right { position: absolute; left: 52%; top: 0; display: flex; flex-direction: column; gap: 8px; }
+    .header-links { display: flex; gap: 24px; align-items: center; }
+    .header-links a { font-size: 14px; font-weight: 400; color: #848484; text-decoration: none; }
+    .header-links a:hover { color: #000; }
+    .header-bio { font-size: 14px; font-weight: 400; color: #848484; max-width: 340px; line-height: 1.55; }
+
+    /* ── Mobile ── */
+    @media (max-width: 768px) {
+      .page-wrap { padding: 24px 16px 100px; }
+
+      .header { padding-left: 0; padding-right: 0; }
+
+      .header-right {
+        position: static;
+        margin-top: 16px;
+      }
+      .header-links { flex-wrap: wrap; gap: 16px; }
+
+      /* Hide Email/Resume from the pinned right group on mobile — keep them in header-links */
+      .header-links-right {
+        position: static !important;
+        margin-top: 4px;
+      }
+
+      .info-row { padding: 32px 0 0 0; flex-direction: column; gap: 24px; }
+      .info-left { flex-wrap: wrap; gap: 24px; }
+
+      .grid { padding: 24px 0; gap: 8px; }
+    }
+
+    @media (max-width: 480px) {
+      .header-links { gap: 12px; }
+      .header-links a { font-size: 13px; }
+      .header-name { font-size: 14px; }
+    }
+
+    /* ── Info row (above projects) ── */
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 80px 0 0 16px;
+    }
+    .info-left {
+      display: flex;
+      gap: 56px;
+    }
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .info-label {
+      font-size: 14px;
+      color: #848484;
+    }
+    .info-value {
+      font-size: 14px;
+      font-weight: 400;
+      color: #1a1a1a;
+    }
+    .info-bio {
+      font-size: 14px;
+      color: #848484;
+      max-width: 380px;
+      line-height: 1.55;
+    }
+
+    /* ── Project cards ── */
+    .grid { display: flex; flex-direction: column; gap: 10px; padding: 38px 0; }
+
+    .project-card {
+      background: #F7F7F7;
+      border-radius: 6px;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #a4a7ae;
+      margin-bottom: 8px;
+    }
+
+    .card-img {
+      width: 100%;
+      display: block;
+      border-radius: 3px;
+    }
+
+    /* ── FoodStash card video ── */
+    .card-video-wrap {
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .card-video {
+      width: 100%;
+      display: block;
+      view-transition-name: foodstash-hero;
+      transform: scale(1);
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .project-card:hover .card-video {
+      transform: scale(1.06);
+    }
+
+.card-img-placeholder {
+      width: 100%;
+      height: 420px;
+      background: #e8e7e3;
+      border-radius: 3px;
+    }
+
+    .card-date {
+      font-size: 12px;
+      color: #a4a7ae;
+      margin-top: 8px;
+    }
+
+    /* ══════════════════════════════
+       FLOATING NAV
+    ══════════════════════════════ */
+    .nav-wrapper {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      width: fit-content;
+    }
+
+    .nav-card {
+      background: #fff;
+      border-radius: 6px;
+      box-shadow:
+        0 1px 2px rgba(0,0,0,0.06),
+        0 4px 20px rgba(0,0,0,0.10),
+        0 0 0 0.5px rgba(0,0,0,0.05);
+      overflow: hidden;
+      width: fit-content;
+    }
+
+    /* ── Dropdown height container ── */
+    /* transition is set inline by JS so open/close can have different speeds */
+    .nav-dropdown {
+      height: 0;
+      overflow: hidden;
+    }
+
+    /* Inner: 254px wide, centered (from Figma) */
+    .nav-dropdown-inner {
+      width: 254px;
+      margin: 0 auto;
+      padding: 18px 0 28px;
+      position: relative;
+    }
+
+    /* ── Items list: flows naturally so container height = actual items ── */
+    .dropdown-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 84px;
+    }
+
+    .dropdown-item {
+      font-size: 14px;
+      font-weight: 400;
+      color: rgba(78, 78, 78, 0.72);
+      cursor: pointer;
+      padding: 2px 0;
+      white-space: nowrap;
+      transform: translateX(0px);
+      transition:
+        transform 0.4s cubic-bezier(0.34, 1.6, 0.64, 1),
+        opacity   0.2s  ease,
+        color     0.15s ease;
+    }
+
+    /* Slide right + full opacity on hover */
+    .dropdown-item.item-hovered {
+      transform: translateX(6px);
+      color: rgba(78, 78, 78, 1);
+      opacity: 1 !important;
+    }
+
+    /* Dim siblings */
+    .dropdown-list.has-hover .dropdown-item:not(.item-hovered) {
+      opacity: 0.35;
+    }
+
+    /* ── Preview box: left-182px, top-18px, 64×64, rounded-5px (Figma) ── */
+    .preview-container {
+      position: absolute;
+      left: 182px;
+      top: 18px;
+      width: 64px;
+      height: 64px;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    /* Each preview — stacked, crossfade */
+    .preview-box {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      left: 0;
+      top: 0;
+      background: transparent;
+      opacity: 0;
+      transform: scale(1.06) translateY(4px);
+      transition:
+        opacity   0.28s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.42s cubic-bezier(0.34, 1.2, 0.64, 1);
+      will-change: opacity, transform;
+    }
+
+    .preview-box.is-active {
+      opacity: 1;
+      transform: scale(1) translateY(0px);
+    }
+
+    .preview-box.is-leaving {
+      opacity: 0;
+      transform: scale(0.97) translateY(-2px);
+      transition:
+        opacity   0.18s cubic-bezier(0.4, 0, 1, 1),
+        transform 0.22s cubic-bezier(0.4, 0, 1, 1);
+    }
+
+    /* ── Nav bar: px-6 py-2 gap-4 (Figma) ── */
+    .nav-bar {
+      display: flex;
+      align-items: center;
+      padding: 2px 6px;
+      gap: 4px;
+    }
+
+    /* Figma: px-16 py-10, rounded-24 (Projects), rounded-30 (About), rounded-36 (Playground) */
+    .nav-item {
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 400;
+      color: #4e4e4e;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      white-space: nowrap;
+      user-select: none;
+      transition: background 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #btn-work       { border-radius: 24px; }
+    #btn-about      { border-radius: 30px; }
+    #btn-playground { border-radius: 36px; }
+
+    .nav-item.is-active { background: #e9e9e9; }
+
+    /* Chevron: rotate 180° when open */
+    .chevron {
+      width: 10px;
+      height: 10px;
+      flex-shrink: 0;
+      opacity: 0.6;
+      transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
+    }
+    .nav-item.is-active .chevron { transform: rotate(180deg); }
+
+    /* ══════════════════════════════
+       MOBILE NAV OVERLAY
+    ══════════════════════════════ */
+    .mobile-nav-pill { display: none; }
+    .mobile-nav-overlay { display: none; }
+    .mobile-nav-close { display: none; }
+
+    @media (max-width: 768px) {
+      .nav-wrapper { display: none; }
+
+      .mobile-nav-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1001;
+        background: #fff;
+        border-radius: 10px;
+        padding: 12px 22px;
+        font-size: 14px;
+        color: #4e4e4e;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.05);
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        white-space: nowrap;
+      }
+
+      .mobile-nav-overlay {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        inset: 0;
+        background: #fff;
+        z-index: 2000;
+        padding: 52px 28px 120px;
+        overflow-y: auto;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(20px);
+        transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+      }
+      .mobile-nav-overlay.is-open {
+        opacity: 1;
+        pointer-events: all;
+        transform: translateY(0);
+      }
+
+      .mobile-nav-section-label {
+        font-size: 11px;
+        color: #a4a7ae;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin: 32px 0 8px;
+      }
+      .mobile-nav-section-label:first-child { margin-top: 0; }
+
+      .mobile-nav-link {
+        font-size: 17px;
+        font-weight: 500;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        text-decoration: none;
+        letter-spacing: -0.01em;
+      }
+      .mobile-nav-link.is-current { color: #b0b0b0; }
+
+      .mobile-nav-sub {
+        font-size: 17px;
+        font-weight: 400;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        letter-spacing: -0.01em;
+      }
+      .mobile-nav-sub:last-child { border-bottom: none; }
+      .mobile-nav-sub.is-current { color: #b0b0b0; }
+
+      .mobile-nav-thumb {
+        width: 52px;
+        height: 52px;
+        border-radius: 10px;
+        object-fit: cover;
+        flex-shrink: 0;
+        background: #f0f0f0;
+      }
+
+      .mobile-nav-close {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2001;
+        background: #fff;
+        border-radius: 10px;
+        padding: 12px 22px;
+        font-size: 14px;
+        color: #4e4e4e;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.05);
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+      .mobile-nav-close.is-open {
+        opacity: 1;
+        pointer-events: all;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="page-overlay"></div>
+
+  <div class="page-wrap">
+
+    <div class="header">
+      <div class="header-left">
+        <div class="header-line">
+          <img class="header-pfp" src="pfp.png" alt="Brandon Wan">
+          <span class="header-name">Brandon Wan</span>
+        </div>
+        <div class="header-sub">A Product Designer based in YVR</div>
+      </div>
+      <div class="header-right">
+        <div class="header-links">
+          <a href="#">Showreel</a>
+          <a href="https://linkedin.com/in/brandontywan" target="_blank">LinkedIn</a>
+          <a href="https://x.com/br4ndonwan" target="_blank">Twitter</a>
+        </div>
+      </div>
+      <div class="header-links header-links-right" style="position:absolute; right:16px; top:0;">
+        <a href="mailto:hello@brandon.me">Email</a>
+        <a href="#">Resume</a>
+      </div>
+    </div>
+
+    <div class="grid">
+
+      <!-- Food Stash -->
+      <div class="project-card" onclick="navigateTo('foodstash.html')">
+        <div class="card-meta">
+          <span>Food Stash</span>
+          <span>P-011</span>
+        </div>
+        <div class="card-video-wrap">
+          <video class="card-video" autoplay loop muted playsinline>
+            <source src="VIDEO%20ASSETS/Foodstash/Cover%204k.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <div class="card-date">20250521</div>
+      </div>
+
+      <!-- MEC — image coming soon -->
+      <div class="project-card">
+        <div class="card-meta">
+          <span>MEC</span>
+          <span>P-012</span>
+        </div>
+        <div class="card-img-placeholder"></div>
+        <div class="card-date">20250601</div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ══ Floating Nav ══ -->
+  <div class="nav-wrapper">
+    <div class="nav-card" id="navCard">
+
+      <!-- Dropdown (grows upward from the nav bar) -->
+      <div class="nav-dropdown" id="navDropdown">
+        <div class="nav-dropdown-inner">
+          <div class="dropdown-list"    id="dropdownList"></div>
+          <div class="preview-container" id="previewContainer"></div>
+        </div>
+      </div>
+
+      <!-- Nav bar -->
+      <div class="nav-bar">
+        <div class="nav-item" id="btn-work">
+          Work
+          <svg class="chevron" viewBox="0 0 10 10" fill="none">
+            <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="nav-item" id="btn-about">About</div>
+        <div class="nav-item" id="btn-playground">
+          Playground
+          <svg class="chevron" viewBox="0 0 10 10" fill="none">
+            <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Mobile nav pill -->
+  <div class="mobile-nav-pill" id="mobileNavPill">
+    Work
+    <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
+      <path d="M1 1h12M1 5h12M1 9h12" stroke="#4e4e4e" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Mobile nav overlay -->
+  <div class="mobile-nav-overlay" id="mobileNavOverlay">
+    <p class="mobile-nav-section-label">Work</p>
+    <span class="mobile-nav-link is-current" onclick="mobileNavigate('index.html')">Food Stash</span>
+    <span class="mobile-nav-link" onclick="mobileNavigate('mec.html')">MEC</span>
+
+    <p class="mobile-nav-section-label">About</p>
+    <span class="mobile-nav-link" onclick="mobileNavigate('about.html')">About</span>
+
+    <p class="mobile-nav-section-label">Playground</p>
+    <span class="mobile-nav-sub" onclick="mobileNavigate('posters.html')">All</span>
+    <span class="mobile-nav-sub" onclick="mobileNavigate('posters.html?filter=posters')">Posters</span>
+    <span class="mobile-nav-sub" onclick="mobileNavigate('posters.html?filter=ui')">UI Design</span>
+    <span class="mobile-nav-sub" onclick="mobileNavigate('posters.html?filter=experimental')">Experimental</span>
+    <span class="mobile-nav-sub" onclick="mobileNavigate('posters.html?filter=social')">Social Media</span>
+  </div>
+
+  <!-- Mobile close pill -->
+  <div class="mobile-nav-close" id="mobileNavClose">
+    Work
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+      <path d="M1 1l10 10M11 1L1 11" stroke="#4e4e4e" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Custom cursor element -->
+  <div id="cursor"></div>
+
+  <script>
+    // ── Live clock ──
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      const el = document.getElementById('localTime');
+      if (el) el.textContent = `${h}:${m}:${s}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // ── Page transitions ──
+    const overlay = document.getElementById('page-overlay');
+
+    // Fade in on arrival — 1500ms
+    overlay.style.transition = 'opacity 1.5s ease';
+    requestAnimationFrame(() => requestAnimationFrame(() => { overlay.style.opacity = '0'; }));
+
+    function navigateTo(url) {
+      if (url === 'foodstash.html') {
+        const vid = document.querySelector('.card-video');
+        if (vid) {
+          sessionStorage.setItem('fs-video-time', vid.currentTime);
+          // Store card's exact position so foodstash can place the snapshot there
+          const r = vid.getBoundingClientRect();
+          sessionStorage.setItem('fs-card-rect', JSON.stringify(
+            { top: r.top, left: r.left, width: r.width, height: r.height }
+          ));
+          try {
+            const c = document.createElement('canvas');
+            c.width = vid.videoWidth || 1280;
+            c.height = vid.videoHeight || 720;
+            c.getContext('2d').drawImage(vid, 0, 0, c.width, c.height);
+            sessionStorage.setItem('fs-card-frame', c.toDataURL('image/jpeg', 0.85));
+          } catch(e) {}
+        }
+        // Navigate immediately — the snapshot on foodstash handles the visual dissolve
+        window.location.href = url;
+      } else {
+        overlay.style.transition = 'opacity 0.1s ease';
+        overlay.style.pointerEvents = 'all';
+        overlay.style.opacity = '1';
+        setTimeout(() => { window.location.href = url; }, 100);
+      }
+    }
+
+    // ── Cursor ──
+    const cursor = document.getElementById('cursor');
+    cursor.style.opacity = '0';
+    document.addEventListener('mousemove', e => {
+      cursor.style.left    = e.clientX + 'px';
+      cursor.style.top     = e.clientY + 'px';
+      cursor.style.opacity = '1';
+    }, { once: false });
+
+    // Grow on clickable elements
+    const CLICKABLE = 'a, button, [onclick], .nav-item, .dropdown-item, input, select, textarea, label';
+    document.addEventListener('mouseover', e => {
+      if (e.target.closest(CLICKABLE)) cursor.classList.add('is-hovering');
+    });
+    document.addEventListener('mouseout', e => {
+      if (e.target.closest(CLICKABLE)) cursor.classList.remove('is-hovering');
+    });
+
+    // ══════════════════════════════════════════════
+    //  MENU DATA
+    //  Each item gets a grey box placeholder.
+    //  To add real images later, add: img: 'path/to/image.jpg'
+    //  and swap the .preview-box background for an <img> tag in build().
+    // ══════════════════════════════════════════════
+    const MENUS = {
+      work: [
+        { label: 'Food Stash', url: 'foodstash.html' },
+        { label: 'MEC', url: 'mec.html' },
+      ],
+      playground: [
+        { label: 'Posters',      url: 'posters.html?filter=posters',      img: 'NAV/Poster.png'       },
+        { label: 'UI Design',    url: 'posters.html?filter=ui',            img: 'NAV/UI Design.png'    },
+        { label: 'Experimental', url: 'posters.html?filter=experimental',  img: 'NAV/Experimental.png' },
+        { label: 'Social Media', url: 'posters.html?filter=social',        img: 'NAV/Social Media.png' },
+      ],
+    };
+
+    // ── State ──
+    let openKey   = null;
+    let activeBox = null;   // currently visible .preview-box
+    let closeTimer = null;
+
+    const dropdown  = document.getElementById('navDropdown');
+    const list      = document.getElementById('dropdownList');
+    const previews  = document.getElementById('previewContainer');
+    const navCard   = document.getElementById('navCard');
+
+    // ── Build dropdown content for a key ──
+    function build(key) {
+      list.innerHTML     = '';
+      previews.innerHTML = '';
+      activeBox = null;
+
+      MENUS[key].forEach((item, i) => {
+        // Item text
+        const el = document.createElement('div');
+        el.className    = 'dropdown-item';
+        el.textContent  = item.label;
+        el.dataset.idx  = i;
+
+        el.addEventListener('mouseenter', () => {
+          list.classList.add('has-hover');
+          list.querySelectorAll('.dropdown-item').forEach(d => d.classList.remove('item-hovered'));
+          el.classList.add('item-hovered');
+          showBox(i);
+        });
+        el.addEventListener('mouseleave', () => el.classList.remove('item-hovered'));
+        if (item.url) el.addEventListener('click', () => navigateTo(item.url));
+        list.appendChild(el);
+
+        // Preview box (one per item, stacked)
+        const box = document.createElement('div');
+        box.className   = 'preview-box';
+        box.dataset.idx = i;
+        if (item.img) {
+          const img = document.createElement('img');
+          img.src = item.img;
+          img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;';
+          box.appendChild(img);
+        }
+        previews.appendChild(box);
+      });
+
+      // Clear hover state when mouse leaves the list
+      list.addEventListener('mouseleave', () => {
+        list.classList.remove('has-hover');
+        list.querySelectorAll('.dropdown-item').forEach(d => d.classList.remove('item-hovered'));
+        hideBox();
+      });
+    }
+
+    function showBox(idx) {
+      const target = previews.querySelector(`[data-idx="${idx}"]`);
+      if (!target || activeBox === target) return;
+
+      if (activeBox) {
+        activeBox.classList.remove('is-active');
+        activeBox.classList.add('is-leaving');
+        const prev = activeBox;
+        setTimeout(() => prev.classList.remove('is-leaving'), 250);
+      }
+
+      target.classList.remove('is-leaving');
+      target.classList.add('is-active');
+      activeBox = target;
+    }
+
+    function hideBox() {
+      if (!activeBox) return;
+      activeBox.classList.remove('is-active');
+      activeBox.classList.add('is-leaving');
+      const prev = activeBox;
+      setTimeout(() => prev.classList.remove('is-leaving'), 250);
+      activeBox = null;
+    }
+
+    // ── Open dropdown ──
+    function openDropdown(key, btn) {
+      if (openKey === key) return;
+
+      const currentH = dropdown.offsetHeight; // snapshot before content changes
+      build(key);
+
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('is-active'));
+      btn.classList.add('is-active');
+
+      // Measure target height
+      dropdown.style.transition = 'none';
+      dropdown.style.height     = 'auto';
+      const targetH = dropdown.scrollHeight;
+
+      // Restore current height before animating
+      dropdown.style.height = (openKey !== null ? currentH : 0) + 'px';
+      dropdown.getBoundingClientRect(); // force reflow
+
+      // Open: spring feel. Switch between menus: slightly snappier.
+      const isSwitch = openKey !== null;
+      dropdown.style.transition = isSwitch
+        ? 'height 0.35s cubic-bezier(0.34, 1.2, 0.64, 1)'
+        : 'height 0.45s cubic-bezier(0.34, 1.25, 0.64, 1)';
+
+      dropdown.style.height = targetH + 'px';
+      openKey = key;
+    }
+
+    // ── Close dropdown ──
+    function closeDropdown() {
+      if (openKey === null) return;
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('is-active'));
+      hideBox();
+      // Close: faster, more velocity (ease-in)
+      dropdown.style.transition = 'height 0.18s cubic-bezier(0.4, 0, 1, 1)';
+      dropdown.style.height     = '0px';
+      openKey = null;
+    }
+
+    // ── Hover wiring ──
+    // Small delay on leave so you can move mouse to dropdown without it closing
+    navCard.addEventListener('mouseleave', () => {
+      closeTimer = setTimeout(closeDropdown, 120);
+    });
+    navCard.addEventListener('mouseenter', () => {
+      clearTimeout(closeTimer);
+    });
+
+    const btnWork       = document.getElementById('btn-work');
+    const btnPlayground = document.getElementById('btn-playground');
+    const btnAbout      = document.getElementById('btn-about');
+
+    btnWork.addEventListener('mouseenter', () => {
+      clearTimeout(closeTimer);
+      openDropdown('work', btnWork);
+    });
+    btnWork.addEventListener('click', () => navigateTo('index.html'));
+
+    btnPlayground.addEventListener('mouseenter', () => {
+      clearTimeout(closeTimer);
+      openDropdown('playground', btnPlayground);
+    });
+    btnPlayground.addEventListener('click', () => navigateTo('posters.html'));
+
+    btnAbout.addEventListener('mouseenter', () => { clearTimeout(closeTimer); closeDropdown(); });
+    btnAbout.addEventListener('click', () => navigateTo('about.html'));
+
+    // ── Mobile nav overlay ──
+    const mobileNavPill    = document.getElementById('mobileNavPill');
+    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+    const mobileNavClose   = document.getElementById('mobileNavClose');
+
+    function openMobileNav() {
+      mobileNavOverlay.classList.add('is-open');
+      mobileNavClose.classList.add('is-open');
+      mobileNavPill.style.opacity = '0';
+      mobileNavPill.style.pointerEvents = 'none';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileNav() {
+      mobileNavOverlay.classList.remove('is-open');
+      mobileNavClose.classList.remove('is-open');
+      mobileNavPill.style.opacity = '1';
+      mobileNavPill.style.pointerEvents = 'auto';
+      document.body.style.overflow = '';
+    }
+
+    function mobileNavigate(url) {
+      closeMobileNav();
+      setTimeout(() => navigateTo(url), 80);
+    }
+
+    if (mobileNavPill)  mobileNavPill.addEventListener('click', openMobileNav);
+    if (mobileNavClose) mobileNavClose.addEventListener('click', closeMobileNav);
+  </script>
+</body>
+</html>
