@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="theme-color" content="#ffffff">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Brandon Wan</title>
   <link rel="icon" type="image/png" href="pfp.png">
@@ -90,16 +91,28 @@
 
       .header { padding-left: 0; padding-right: 0; }
 
-      /* Hide the off-center links and pinned right links on mobile */
-      .header-right { display: none; }
-      .header-links-right { display: none !important; }
+      .header-right {
+        position: static;
+        margin-top: 16px;
+      }
+      .header-links { flex-wrap: wrap; gap: 16px; }
 
-      .info-row { display: none; }
+      /* Hide Email/Resume from the pinned right group on mobile — keep them in header-links */
+      .header-links-right {
+        position: static !important;
+        margin-top: 4px;
+      }
+
+      .info-row { padding: 32px 0 0 0; flex-direction: column; gap: 24px; }
+      .info-left { flex-wrap: wrap; gap: 24px; }
 
       .grid { padding: 24px 0; gap: 8px; }
+    }
 
-      /* MEC card — hide empty placeholder, show minimal card */
-      .card-img-placeholder { display: none; }
+    @media (max-width: 480px) {
+      .header-links { gap: 12px; }
+      .header-links a { font-size: 13px; }
+      .header-name { font-size: 14px; }
     }
 
     /* ── Info row (above projects) ── */
@@ -358,12 +371,11 @@
         left: 50%;
         transform: translateX(-50%);
         z-index: 1001;
-        background: #fff;
+        background: transparent;
         border-radius: 10px;
         padding: 12px 22px;
         font-size: 14px;
         color: #4e4e4e;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.10), 0 0 0 0.5px rgba(0,0,0,0.05);
         cursor: pointer;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
