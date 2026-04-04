@@ -476,6 +476,81 @@
     .nav-item.is-active .chevron { transform: rotate(180deg); }
 
     /* ══════════════════════════════
+       MOBILE RESPONSIVE
+    ══════════════════════════════ */
+    @media (max-width: 768px) {
+      #cursor { display: none; }
+      * { cursor: auto !important; }
+
+      /* Hide left progress nav on mobile */
+      .page-nav-wrap { display: none; }
+
+      /* Hero shorter on mobile */
+      .hero { height: 55vh; }
+
+      /* Tighter content padding */
+      .content {
+        padding-top: 40px;
+        padding-bottom: 120px;
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      /* Title */
+      .project-title { font-size: 22px; line-height: 30px; margin-bottom: 24px; }
+
+      /* Meta — stack vertically */
+      .project-meta {
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 48px;
+      }
+
+      /* Section headings */
+      .section-heading { font-size: 18px; line-height: 24px; }
+      .section-label { font-size: 13px; }
+      .sub-heading { font-size: 18px; line-height: 24px; }
+      .text-lg { font-size: 15px; line-height: 24px; }
+      .text-md { font-size: 14px; line-height: 22px; }
+
+      /* Images — full width, auto height */
+      .cs-placeholder.wide,
+      .cs-placeholder.std { height: auto; min-height: 200px; }
+      .cs-placeholder { margin-top: 20px; margin-bottom: 32px; }
+
+      /* Grids — stack to single col */
+      .img-grid-3 { grid-template-columns: 1fr; }
+      .img-grid-3 .cs-placeholder { height: 240px; }
+      .img-grid-2 { grid-template-columns: 1fr; }
+      .img-grid-2 .cs-placeholder { aspect-ratio: 1311/1002; }
+
+      /* Friction grid — stack */
+      .friction-grid { grid-template-columns: 1fr; gap: 28px; }
+
+      /* Callout */
+      .callout { margin: 40px 0; padding: 20px 20px; font-size: 15px; }
+
+      /* Anno frames */
+      .anno-frame { height: auto; min-height: 240px; }
+
+      /* Section spacing */
+      .cs-section { margin-bottom: 64px; }
+      .sub-section { margin-top: 48px; }
+      .decision-item { margin-top: 48px; }
+
+      /* Bottom fade */
+      body::after {
+        content: "";
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 75px;
+        background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 40%, rgba(255,255,255,1) 75%);
+        pointer-events: none;
+        z-index: 1000;
+      }
+    }
+
+    /* ══════════════════════════════
        MOBILE NAV OVERLAY
     ══════════════════════════════ */
     .mobile-nav-pill { display: none; }
