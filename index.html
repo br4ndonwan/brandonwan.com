@@ -571,6 +571,7 @@
 
       <!-- Nav bar -->
       <div class="nav-bar">
+        <div class="nav-item" id="btn-home" style="border-radius:20px;">Home</div>
         <div class="nav-item" id="btn-work">
           Work
           <svg class="chevron" viewBox="0 0 10 10" fill="none">
@@ -599,6 +600,10 @@
 
   <!-- Mobile nav overlay -->
   <div class="mobile-nav-overlay" id="mobileNavOverlay">
+    <span class="mobile-nav-link is-current" onclick="mobileNavigate('index.html')">
+      <img class="mobile-nav-thumb" src="pfp.png" alt="" style="object-fit:cover;">
+      Homepage
+    </span>
     <p class="mobile-nav-section-label">Work</p>
     <span class="mobile-nav-link is-current" onclick="mobileNavigate('index.html')">
       <img class="mobile-nav-thumb" src="VIDEO ASSETS/Foodstash/LANDING.png" alt="">
@@ -861,6 +866,10 @@
     const btnWork       = document.getElementById('btn-work');
     const btnPlayground = document.getElementById('btn-playground');
     const btnAbout      = document.getElementById('btn-about');
+
+    const btnHome = document.getElementById('btn-home');
+    btnHome.addEventListener('mouseenter', () => { clearTimeout(closeTimer); closeDropdown(); });
+    btnHome.addEventListener('click', () => navigateTo('index.html'));
 
     btnWork.addEventListener('mouseenter', () => {
       clearTimeout(closeTimer);
