@@ -190,6 +190,30 @@
       transform: scale(1.06);
     }
 
+    /* ── Coming Soon cards ── */
+    .card-wip { cursor: default; }
+    .card-wip .card-video-wrap { position: relative; }
+    .card-wip .card-img {
+      transition: filter 0.35s ease;
+    }
+    .card-wip:hover .card-img {
+      filter: blur(16px);
+    }
+    .card-wip-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 500;
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    .card-wip:hover .card-wip-label { opacity: 1; }
+
 .card-img-placeholder {
       width: 100%;
       height: 420px;
@@ -545,25 +569,27 @@
       </div>
 
       <!-- MEC -->
-      <div class="project-card" onclick="navigateTo('mec.html')">
+      <div class="project-card card-wip">
         <div class="card-meta">
           <span>MEC <span style="font-weight:400; color:#c0c0c0;">(Coming Soon)</span></span>
           <span>CS-002</span>
         </div>
         <div class="card-video-wrap">
           <img class="card-img" src="VIDEO ASSETS/MEC/mec_cover.png" alt="MEC">
+          <div class="card-wip-label">Coming Soon</div>
         </div>
         <div class="card-date">UI/UX Design, Prototype, UX Research</div>
       </div>
 
       <!-- Yeezy -->
-      <div class="project-card">
+      <div class="project-card card-wip">
         <div class="card-meta">
           <span>Yeezy <span style="font-weight:400; color:#c0c0c0;">(Coming Soon)</span></span>
           <span>CS-003</span>
         </div>
         <div class="card-video-wrap">
           <img class="card-img" src="VIDEO ASSETS/Yeezy/yzy_cover.png" alt="Yeezy">
+          <div class="card-wip-label">Coming Soon</div>
         </div>
         <div class="card-date">Visual Design, UI/UX Design</div>
       </div>
