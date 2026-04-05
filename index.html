@@ -190,6 +190,32 @@
       transform: scale(1.06);
     }
 
+    /* ── Work in progress hover ── */
+    .card-wip { cursor: default; }
+    .card-wip .card-video-wrap { position: relative; }
+    .card-wip .card-img {
+      transition: filter 0.3s ease;
+    }
+    .card-wip:hover .card-img {
+      filter: blur(8px);
+    }
+    .card-wip-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: #1a1a1a;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      letter-spacing: -0.01em;
+    }
+    .card-wip:hover .card-wip-label {
+      opacity: 1;
+    }
+
 .card-img-placeholder {
       width: 100%;
       height: 420px;
@@ -545,25 +571,27 @@
       </div>
 
       <!-- MEC -->
-      <div class="project-card" onclick="navigateTo('mec.html')">
+      <div class="project-card card-wip">
         <div class="card-meta">
           <span>MEC</span>
           <span>P-012</span>
         </div>
         <div class="card-video-wrap">
           <img class="card-img" src="VIDEO ASSETS/MEC/mec_cover.png" alt="MEC">
+          <div class="card-wip-label">Coming Soon</div>
         </div>
         <div class="card-date">20250601</div>
       </div>
 
       <!-- Yeezy -->
-      <div class="project-card">
+      <div class="project-card card-wip">
         <div class="card-meta">
           <span>Yeezy</span>
           <span>P-013</span>
         </div>
         <div class="card-video-wrap">
           <img class="card-img" src="VIDEO ASSETS/Yeezy/yzy_cover.png" alt="Yeezy">
+          <div class="card-wip-label">Coming Soon</div>
         </div>
         <div class="card-date">20250601</div>
       </div>
