@@ -994,16 +994,27 @@
       // Step 2: name slides up + fades out
       setTimeout(() => loaderName.classList.add('exit'), 1800);
 
-      // Step 3: blue fades while name is sliding up
+      // Step 3: blue fades while name is sliding up + animate chrome color in sync
       setTimeout(() => {
         loader.classList.add('fade-out');
         setTimeout(() => { loader.style.display = 'none'; }, 900);
+
+        // Animate theme-color from #0000ff → #ffffff over 750ms (matches loader fade)
+        const fadeDuration = 750;
+        const fadeStart = Date.now();
+        function animateChrome() {
+          const t = Math.min((Date.now() - fadeStart) / fadeDuration, 1);
+          const v = Math.round(t * 255).toString(16).padStart(2, '0');
+          themeColor.setAttribute('content', `#${v}${v}ff`);
+          if (t < 1) requestAnimationFrame(animateChrome);
+          else themeColor.setAttribute('content', '#ffffff');
+        }
+        requestAnimationFrame(animateChrome);
       }, 1900);
 
-      // Step 4: page content fades in as loader clears, chrome switches to white
+      // Step 4: page content fades in as loader clears
       setTimeout(() => {
         pageWrap.classList.add('visible');
-        themeColor.setAttribute('content', '#ffffff');
       }, 2200);
     }
 
