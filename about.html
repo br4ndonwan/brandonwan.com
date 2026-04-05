@@ -48,11 +48,13 @@
     #landing {
       position: fixed; inset: 0;
       display: flex; align-items: center; justify-content: center;
-      padding-bottom: 55px;
+      padding: 0 24px 55px;
+      overflow-y: auto;
     }
 
     .landing-inner {
-      width: 380px;
+      width: 100%;
+      max-width: 380px;
       display: flex; flex-direction: column; gap: 0;
     }
 
@@ -151,17 +153,14 @@
         align-items: flex-start;
         justify-content: flex-start;
         padding: 48px 24px 120px;
+        position: fixed;
+        inset: 0;
         overflow-y: auto;
-        position: relative;
-        height: auto;
-        min-height: 100vh;
       }
-
-      body { overflow: auto; height: auto; }
 
       .landing-inner {
         width: 100%;
-        max-width: 420px;
+        max-width: 100%;
       }
 
       .landing-sig { font-size: 20px; }
