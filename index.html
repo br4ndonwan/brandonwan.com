@@ -962,13 +962,15 @@
 
     const themeColor = document.getElementById('themeColor');
 
-    if (sessionStorage.getItem('loaderSeen')) {
-      // Already visited — skip loader immediately
+    // Skip animation if navigating from another page on the same site
+    const isInternalNav = document.referrer !== '' &&
+      new URL(document.referrer).hostname === location.hostname;
+
+    if (isInternalNav) {
       loader.style.display = 'none';
       pageWrap.classList.add('visible');
       themeColor.setAttribute('content', '#ffffff');
     } else {
-      sessionStorage.setItem('loaderSeen', '1');
 
       // Step 1: name fades in
       setTimeout(() => loaderName.classList.add('visible'), 150);
