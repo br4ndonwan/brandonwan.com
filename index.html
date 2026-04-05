@@ -197,7 +197,7 @@
       transition: filter 0.35s ease;
     }
     .card-wip:hover .card-img {
-      filter: blur(16px);
+      filter: blur(8px);
     }
     .card-wip-label {
       position: absolute;
@@ -207,7 +207,7 @@
       justify-content: center;
       font-size: 16px;
       font-weight: 500;
-      color: #fff;
+      color: #a4a7ae;
       opacity: 0;
       transition: opacity 0.3s ease;
       pointer-events: none;
@@ -649,9 +649,13 @@
       <img class="mobile-nav-thumb" src="VIDEO ASSETS/Foodstash/LANDING.png" alt="">
       Food Stash
     </span>
-    <span class="mobile-nav-link" onclick="mobileNavigate('mec.html')">
+    <span class="mobile-nav-link" style="cursor:default;">
       <div class="mobile-nav-thumb"></div>
-      MEC
+      MEC <span style="font-weight:400; color:#c0c0c0;">(Coming Soon)</span>
+    </span>
+    <span class="mobile-nav-link" style="cursor:default;">
+      <img class="mobile-nav-thumb" src="VIDEO ASSETS/Yeezy/yzy_cover.png" alt="">
+      Yeezy <span style="font-weight:400; color:#c0c0c0;">(Coming Soon)</span>
     </span>
 
     <p class="mobile-nav-section-label">About</p>
@@ -765,7 +769,8 @@
     const MENUS = {
       work: [
         { label: 'Food Stash', url: 'foodstash.html' },
-        { label: 'MEC', url: 'mec.html' },
+        { label: 'MEC', comingSoon: true },
+        { label: 'Yeezy', comingSoon: true },
       ],
       playground: [
         { label: 'Posters',      url: 'posters.html?filter=posters',      img: 'NAV/Poster.png'       },
@@ -795,7 +800,9 @@
         // Item text
         const el = document.createElement('div');
         el.className    = 'dropdown-item';
-        el.textContent  = item.label;
+        el.innerHTML    = item.comingSoon
+          ? `${item.label} <span style="font-weight:400; color:#c0c0c0;">(Coming Soon)</span>`
+          : item.label;
         el.dataset.idx  = i;
 
         el.addEventListener('mouseenter', () => {
