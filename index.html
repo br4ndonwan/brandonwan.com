@@ -213,6 +213,8 @@
       pointer-events: none;
     }
     .card-wip:hover .card-wip-label { opacity: 1; }
+    .card-wip.is-tapped .card-img { filter: blur(8px); }
+    .card-wip.is-tapped .card-wip-label { opacity: 1; }
 
 .card-img-placeholder {
       width: 100%;
@@ -716,6 +718,11 @@
     // Fade in on arrival — 1500ms
     overlay.style.transition = 'opacity 1.5s ease';
     requestAnimationFrame(() => requestAnimationFrame(() => { overlay.style.opacity = '0'; }));
+
+    // Toggle Coming Soon blur on tap (mobile)
+    document.querySelectorAll('.card-wip').forEach(card => {
+      card.addEventListener('click', () => card.classList.toggle('is-tapped'));
+    });
 
     function navigateTo(url) {
       if (url === 'foodstash.html') {
