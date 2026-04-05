@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#0000ff" id="themeColor">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -960,10 +960,13 @@
     const loaderName = document.getElementById('loader-name');
     const pageWrap   = document.querySelector('.page-wrap');
 
+    const themeColor = document.getElementById('themeColor');
+
     if (sessionStorage.getItem('loaderSeen')) {
       // Already visited — skip loader immediately
       loader.style.display = 'none';
       pageWrap.classList.add('visible');
+      themeColor.setAttribute('content', '#ffffff');
     } else {
       sessionStorage.setItem('loaderSeen', '1');
 
@@ -979,8 +982,11 @@
         setTimeout(() => { loader.style.display = 'none'; }, 900);
       }, 1900);
 
-      // Step 4: page content fades in as loader clears
-      setTimeout(() => { pageWrap.classList.add('visible'); }, 2200);
+      // Step 4: page content fades in as loader clears, chrome switches to white
+      setTimeout(() => {
+        pageWrap.classList.add('visible');
+        themeColor.setAttribute('content', '#ffffff');
+      }, 2200);
     }
 
     // Step 3: preload playground assets quietly in background
