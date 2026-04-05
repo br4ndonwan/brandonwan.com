@@ -409,6 +409,7 @@
         transition: color 0.15s;
       }
       .mobile-col-btn:hover { color: #1a1a1a; }
+      .col-btn-active { color: #1a1a1a !important; }
 
       /* Content fills full width */
       .content {
@@ -711,7 +712,7 @@
 
       <!-- Mobile only: 2-col / 1-col toggle -->
       <div class="mobile-col-toggle">
-        <span class="mobile-col-btn" id="mobileColToggle">View 2</span>
+        <span class="mobile-col-btn col-btn-active" id="mobileCol1" data-cols="1">1</span><span class="mobile-col-btn" id="mobileCol2" data-cols="2">2</span><span class="mobile-col-btn" id="mobileCol3" data-cols="3">3</span>
       </div>
 
     </aside>
@@ -916,14 +917,14 @@
       { img: 'p 2.png',                 title: 'INNOCENCE',        code: 'EX-016', date: '20260109', tags: ['experimental'] },
       { img: 'test 1.png',              title: 'MOODBOARD',        code: 'EX-015', date: '20260105', tags: ['experimental'] },
       { img: 'bonzenfan.png',           title: 'BON_ZENFAN',       code: 'EX-014', date: '20260101', tags: ['experimental'] },
-      { img: 'trying touch designer.png', title: 'TOUCH_DESIGNER', code: 'EX-013', date: '20251219', tags: ['experimental'] },
-      { img: 'Packky1.png',             title: 'IATSU_STICKERS',   code: 'EX-012', date: '20251212', tags: ['experimental'] },
+      { img: 'trying touch design.mov', title: 'TOUCH_DESIGNER', code: 'EX-013', date: '20251219', tags: ['experimental'] },
+      { img: 'packky 1.png',             title: 'IATSU_STICKERS',   code: 'EX-012', date: '20251212', tags: ['experimental'] },
       { img: 'Chapter 16.png',          title: 'CHAPTER_16',       code: 'EX-011', date: '20251023', tags: ['experimental'] },
       { img: 'Frame 319.png',           title: 'SPEAKER',          code: 'EX-010', date: '20250512', tags: ['experimental'] },
       { img: '[ ]GRADING_AD2.png',      title: '[ ]_GRADING_AD2', code: 'EX-009', date: '20250404', tags: ['experimental'] },
       { img: '[ ]GRADING_AD1.png',      title: '[ ]_GRADING_AD1', code: 'EX-008', date: '20250404', tags: ['experimental'] },
       { img: 'SIGMA.png',               title: 'SIGMA',            code: 'EX-007', date: '20250301', tags: ['experimental'] },
-      { img: 'Xgrey.mp4',              title: 'X_GREY',           code: 'EX-006', date: '20180926', tags: ['experimental'] },
+      { img: 'xgrey.mp4',              title: 'X_GREY',           code: 'EX-006', date: '20180926', tags: ['experimental'] },
       { img: 'UGLYGOD.mp4',             title: 'UGLYGOD',          code: 'EX-005', date: '20180915', tags: ['experimental'] },
       { img: 'X.mp4',                   title: 'X',                code: 'EX-004', date: '20180902', tags: ['experimental'] },
       { img: 'MILEAGE.mp4',             title: 'MILEAGE',          code: 'EX-003', date: '20180827', tags: ['experimental'] },
@@ -1014,6 +1015,13 @@
     let currentCols   = window.innerWidth <= 768 ? 2 : 3;
     let currentSort   = 'shuffle';
 
+    // Set active col button on load
+    const initBtn = document.querySelector(`.mobile-col-btn[data-cols="${currentCols}"]`);
+    if (initBtn) {
+      document.querySelectorAll('.mobile-col-btn').forEach(b => b.classList.remove('col-btn-active'));
+      initBtn.classList.add('col-btn-active');
+    }
+
     function getSorted(list) {
       const copy = [...list];
       if (currentSort === 'desc') {
@@ -1100,14 +1108,14 @@
     });
 
     // ── Mobile col toggle ──
-    const mobileColToggle = document.getElementById('mobileColToggle');
-    if (mobileColToggle) {
-      mobileColToggle.addEventListener('click', () => {
-        currentCols = currentCols === 2 ? 1 : 2;
-        mobileColToggle.textContent = `View ${currentCols}`;
+    document.querySelectorAll('.mobile-col-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentCols = parseInt(btn.dataset.cols);
+        document.querySelectorAll('.mobile-col-btn').forEach(b => b.classList.remove('col-btn-active'));
+        btn.classList.add('col-btn-active');
         buildGrid();
       });
-    }
+    });
 
 
     // ── Sort controls ──
