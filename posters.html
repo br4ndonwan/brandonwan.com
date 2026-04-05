@@ -932,7 +932,13 @@
       // Use currentCards (sorted order) not DOM query order
       const rebalance = debounce(() => {
         const allCols = [...wrap.querySelectorAll('.col')];
-        if (allCols.length && currentCards.length) distributeCards(currentCards, allCols);
+        if (allCols.length && currentCards.length) {
+          // Lock min-height so the page doesn't collapse to zero while columns
+          // are cleared, which would cause the browser to reset scrollY to 0.
+          wrap.style.minHeight = wrap.offsetHeight + 'px';
+          distributeCards(currentCards, allCols);
+          wrap.style.minHeight = '';
+        }
       }, 80);
 
       cardRO = new ResizeObserver(rebalance);

@@ -855,7 +855,7 @@
         <div class="cs-placeholder std" style="height:auto; aspect-ratio:3017/1983;" data-img-id="IMAGE16"></div>
 
         <p class="text-md" style="margin-top:32px;">From there, we shaped our interview questions around the gaps we had already identified.</p>
-        <div class="cs-placeholder std" data-fit="natural" style="height:auto; margin-top:24px; margin-bottom:0;" data-img-id="IMAGE17"></div>
+        <img src="VIDEO%20ASSETS/Foodstash/QUOTE.png" style="width:100%; height:auto; display:block; border-radius:3px; margin-top:24px; margin-bottom:0;" alt="">
       </div>
 
     </section>
@@ -1177,8 +1177,9 @@
     // ══════════════════════════════════════════════
     const MENUS = {
       work: [
-        { label: 'Food Stash', url: 'foodstash.html' },
-        { label: 'MEC' },
+        { label: 'Food Stash', url: 'foodstash.html', img: 'VIDEO%20ASSETS/Foodstash/foodstash_logo.png' },
+        { label: 'MEC', comingSoon: true, img: 'VIDEO%20ASSETS/MEC/mec_logo.png' },
+        { label: 'Yeezy', comingSoon: true, img: 'VIDEO%20ASSETS/Yeezy/yzy_logo.png' },
       ],
       playground: [
         { label: 'Posters',      url: 'posters.html?filter=posters',      img: 'NAV/Poster.png'       },
@@ -1202,7 +1203,9 @@
       MENUS[key].forEach((item, i) => {
         const el = document.createElement('div');
         el.className = 'dropdown-item';
-        el.textContent = item.label;
+        el.innerHTML = item.comingSoon
+          ? `${item.label} <span style="font-weight:400; color:#c0c0c0;">(Coming Soon)</span>`
+          : item.label;
         el.dataset.idx = i;
         el.addEventListener('mouseenter', () => {
           list.classList.add('has-hover');
