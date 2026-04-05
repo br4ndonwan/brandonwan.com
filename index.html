@@ -21,24 +21,100 @@
       align-items: center;
       justify-content: center;
       pointer-events: none;
-      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.75s cubic-bezier(0.4, 0, 0.2, 1);
     }
     #loader.fade-out { opacity: 0; }
     #loader-name {
-      font-family: 'Geist', sans-serif;
-      font-size: clamp(28px, 5vw, 52px);
-      font-weight: 500;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 20px;
+      font-weight: 700;
       color: #fff;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.4px;
       opacity: 0;
-      transform: translateY(12px);
-      transition:
-        opacity 0.55s ease,
-        transform 0.65s cubic-bezier(0.25, 1, 0.4, 1);
+      transition: opacity 0.65s ease;
     }
     #loader-name.visible {
       opacity: 1;
-      transform: translateY(0);
+    }
+    #loader-name.exit {
+      opacity: 0;
+      transform: translateY(-90px);
+      transition:
+        opacity 0.9s ease-in,
+        transform 0.9s ease-in;
+    }
+
+    /* ── Page content fade-in after loader ── */
+    .page-wrap {
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    .page-wrap.visible {
+      opacity: 1;
+    }
+
+    /* ── Footer ── */
+    .site-footer {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 28px 32px 48px;
+      margin-top: 40px;
+      border-top: 1px solid #ebebeb;
+      gap: 24px;
+    }
+    .footer-right-group {
+      display: flex;
+      gap: 48px;
+      align-items: flex-start;
+      flex-shrink: 0;
+    }
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .footer-col--social { gap: 4px; }
+    .footer-col--resume { align-items: flex-end; }
+    .footer-label {
+      font-size: 14px;
+      font-weight: 400;
+      color: #1a1a1a;
+      margin-bottom: 2px;
+    }
+    .footer-muted {
+      font-size: 14px;
+      font-weight: 400;
+      color: #a0a0a0;
+    }
+    .footer-email-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .footer-copy-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      color: #c0c0c0;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s ease;
+    }
+    .footer-copy-btn:hover { color: #000; }
+    .footer-link {
+      font-size: 14px;
+      font-weight: 400;
+      color: #a0a0a0;
+      text-decoration: none;
+      transition: color 0.15s ease;
+      white-space: nowrap;
+    }
+    .footer-link:hover { color: #000; }
+    @media (max-width: 500px) {
+      .footer-right-group { gap: 28px; }
+      .footer-label, .footer-muted, .footer-link { font-size: 13px; }
     }
 
     /* ── Page transition overlay ── */
@@ -101,11 +177,11 @@
     }
 
     .page-wrap {
-      padding: 32px 32px 140px;
+      padding: 32px 32px 60px;
     }
 
     /* ── Header ── */
-    .header { padding-bottom: 0; padding-left: 16px; padding-right: 16px; position: relative; }
+    .header { padding-bottom: 0; padding-left: 0; padding-right: 0; position: relative; }
     .header-left { display: flex; flex-direction: column; }
     .header-line { display: flex; align-items: center; gap: 6px; }
     .header-pfp  { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; display: block; flex-shrink: 0; }
@@ -683,7 +759,7 @@
           <a href="https://x.com/br4ndonwan" target="_blank">Twitter</a>
         </div>
       </div>
-      <div class="header-links header-links-right" style="position:absolute; right:16px; top:0;">
+      <div class="header-links header-links-right" style="position:absolute; right:0; top:0;">
         <a href="mailto:brandon_wan@sfu.ca">Email</a>
         <a href="#">Resume</a>
       </div>
@@ -734,6 +810,34 @@
     </div>
 
   </div>
+
+  <!-- ══ Footer ══ -->
+  <footer class="site-footer">
+    <div class="footer-col footer-col--left">
+      <span class="footer-label">Designed by Brandon</span>
+      <div class="footer-email-wrap">
+        <span class="footer-muted">brandon_wan@sfu.ca</span>
+        <button class="footer-copy-btn" onclick="copyEmail(this)" title="Copy email">
+          <svg width="12" height="12" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4.5" y="4.5" width="7" height="7" rx="1.2" stroke="currentColor" stroke-width="1.1"/>
+            <path d="M3 8.5H2.2A1.2 1.2 0 0 1 1 7.3V2.2A1.2 1.2 0 0 1 2.2 1h5.1a1.2 1.2 0 0 1 1.2 1.2V3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <span class="footer-muted" id="footerTime"></span>
+      <span class="footer-muted">Last updated Apr 2025</span>
+    </div>
+    <div class="footer-right-group">
+      <div class="footer-col footer-col--social">
+        <a href="https://x.com/br4ndonwan" target="_blank" class="footer-link">Twitter ↗</a>
+        <a href="https://linkedin.com/in/brandontywan" target="_blank" class="footer-link">LinkedIn ↗</a>
+        <a href="https://instagram.com/br4ndonwan" target="_blank" class="footer-link">Instagram ↗</a>
+      </div>
+      <div class="footer-col footer-col--resume">
+        <a href="Resume.pdf" target="_blank" class="footer-link">Resume ↗</a>
+      </div>
+    </div>
+  </footer>
 
   <!-- ══ Floating Nav ══ -->
   <div class="nav-wrapper">
@@ -854,15 +958,30 @@
     // ── Intro loader ──
     const loader     = document.getElementById('loader');
     const loaderName = document.getElementById('loader-name');
+    const pageWrap   = document.querySelector('.page-wrap');
 
-    // Step 1: name fades in after 120ms
-    setTimeout(() => loaderName.classList.add('visible'), 120);
+    if (sessionStorage.getItem('loaderSeen')) {
+      // Already visited — skip loader immediately
+      loader.style.display = 'none';
+      pageWrap.classList.add('visible');
+    } else {
+      sessionStorage.setItem('loaderSeen', '1');
 
-    // Step 2: fade out loader after 1.4s
-    setTimeout(() => {
-      loader.classList.add('fade-out');
-      setTimeout(() => { loader.style.display = 'none'; }, 650);
-    }, 1400);
+      // Step 1: name fades in
+      setTimeout(() => loaderName.classList.add('visible'), 150);
+
+      // Step 2: name slides up + fades out
+      setTimeout(() => loaderName.classList.add('exit'), 1800);
+
+      // Step 3: blue fades while name is sliding up
+      setTimeout(() => {
+        loader.classList.add('fade-out');
+        setTimeout(() => { loader.style.display = 'none'; }, 900);
+      }, 1900);
+
+      // Step 4: page content fades in as loader clears
+      setTimeout(() => { pageWrap.classList.add('visible'); }, 2200);
+    }
 
     // Step 3: preload playground assets quietly in background
     setTimeout(() => {
@@ -879,6 +998,30 @@
     document.querySelectorAll('.card-wip').forEach(card => {
       card.addEventListener('click', () => card.classList.toggle('is-tapped'));
     });
+
+    // Footer local time
+    function updateFooterTime() {
+      const el = document.getElementById('footerTime');
+      if (!el) return;
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      const offset = -now.getTimezoneOffset() / 60;
+      const tz = 'GMT' + (offset >= 0 ? '+' : '') + offset;
+      el.textContent = `${h}:${m}:${s} ${tz}`;
+    }
+    updateFooterTime();
+    setInterval(updateFooterTime, 1000);
+
+    function copyEmail(btn) {
+      navigator.clipboard.writeText('brandon_wan@sfu.ca').then(() => {
+        btn.classList.add('copied');
+        const original = btn.innerHTML;
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><polyline points="2,7 5,10 11,3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        setTimeout(() => { btn.innerHTML = original; btn.classList.remove('copied'); }, 1800);
+      });
+    }
 
     function navigateTo(url) {
       if (url === 'foodstash.html') {

@@ -336,6 +336,67 @@
         z-index: 1000;
       }
     }
+
+    /* ── Footer ── */
+    .site-footer {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 28px 16px 28px;
+      margin-top: 80px;
+      border-top: 1px solid #ebebeb;
+    }
+    .footer-right-group {
+      display: flex;
+      gap: 48px;
+      align-items: flex-start;
+    }
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .footer-col--social { gap: 4px; }
+    .footer-col--resume { align-items: flex-end; }
+    .footer-label {
+      font-size: 13px;
+      font-weight: 400;
+      color: #1a1a1a;
+      margin-bottom: 2px;
+    }
+    .footer-muted {
+      font-size: 13px;
+      font-weight: 400;
+      color: #a0a0a0;
+    }
+    .footer-email-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .footer-copy-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      color: #c0c0c0;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s ease;
+    }
+    .footer-copy-btn:hover { color: #000; }
+    .footer-link {
+      font-size: 13px;
+      font-weight: 400;
+      color: #a0a0a0;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    .footer-link:hover { color: #000; }
+    @media (max-width: 640px) {
+      .site-footer { flex-wrap: wrap; gap: 28px; }
+      .footer-col--resume { align-items: flex-start; }
+    }
   </style>
 </head>
 <body>
@@ -368,6 +429,7 @@
       <p>I'd love to connect.</p>
     </div>
   </div>
+
 </div>
 
 <!-- ══ Floating Nav ══ -->
@@ -460,6 +522,30 @@
   </div>
 
 <script>
+  // Footer local time
+  function updateFooterTime() {
+    const el = document.getElementById('footerTime');
+    if (!el) return;
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    const offset = -now.getTimezoneOffset() / 60;
+    const tz = 'GMT' + (offset >= 0 ? '+' : '') + offset;
+    el.textContent = `${h}:${m}:${s} ${tz}`;
+  }
+  updateFooterTime();
+  setInterval(updateFooterTime, 1000);
+
+  function copyEmail(btn) {
+    navigator.clipboard.writeText('brandon_wan@sfu.ca').then(() => {
+      btn.classList.add('copied');
+      const original = btn.innerHTML;
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><polyline points="2,7 5,10 11,3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      setTimeout(() => { btn.innerHTML = original; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+
   // ── Page fade ──
   const overlay = document.getElementById('page-overlay');
   overlay.style.transition = 'opacity 1.5s ease';

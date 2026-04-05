@@ -361,6 +361,70 @@
         pointer-events: all;
       }
     }
+
+    /* ── Footer ── */
+    .site-footer {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 28px 32px 48px;
+      margin-top: 40px;
+      border-top: 1px solid #ebebeb;
+      gap: 24px;
+    }
+    .footer-right-group {
+      display: flex;
+      gap: 48px;
+      align-items: flex-start;
+      flex-shrink: 0;
+    }
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .footer-col--social { gap: 4px; }
+    .footer-col--resume { align-items: flex-end; }
+    .footer-label {
+      font-size: 14px;
+      font-weight: 400;
+      color: #1a1a1a;
+      margin-bottom: 2px;
+    }
+    .footer-muted {
+      font-size: 14px;
+      font-weight: 400;
+      color: #a0a0a0;
+    }
+    .footer-email-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .footer-copy-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      color: #c0c0c0;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s ease;
+    }
+    .footer-copy-btn:hover { color: #000; }
+    .footer-link {
+      font-size: 14px;
+      font-weight: 400;
+      color: #a0a0a0;
+      text-decoration: none;
+      transition: color 0.15s ease;
+      white-space: nowrap;
+    }
+    .footer-link:hover { color: #000; }
+    @media (max-width: 500px) {
+      .footer-right-group { gap: 28px; }
+      .footer-label, .footer-muted, .footer-link { font-size: 13px; }
+    }
   </style>
 </head>
 <body>
@@ -462,6 +526,34 @@
 
   <div class="back-hint">scroll ↑ to go back</div>
 
+  <!-- ══ Footer ══ -->
+  <footer class="site-footer">
+    <div class="footer-col footer-col--left">
+      <span class="footer-label">Designed by Brandon</span>
+      <div class="footer-email-wrap">
+        <span class="footer-muted">brandon_wan@sfu.ca</span>
+        <button class="footer-copy-btn" onclick="copyEmail(this)" title="Copy email">
+          <svg width="12" height="12" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4.5" y="4.5" width="7" height="7" rx="1.2" stroke="currentColor" stroke-width="1.1"/>
+            <path d="M3 8.5H2.2A1.2 1.2 0 0 1 1 7.3V2.2A1.2 1.2 0 0 1 2.2 1h5.1a1.2 1.2 0 0 1 1.2 1.2V3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <span class="footer-muted" id="footerTime"></span>
+      <span class="footer-muted">Last updated Apr 2025</span>
+    </div>
+    <div class="footer-right-group">
+      <div class="footer-col footer-col--social">
+        <a href="https://x.com/br4ndonwan" target="_blank" class="footer-link">Twitter ↗</a>
+        <a href="https://linkedin.com/in/brandontywan" target="_blank" class="footer-link">LinkedIn ↗</a>
+        <a href="https://instagram.com/br4ndonwan" target="_blank" class="footer-link">Instagram ↗</a>
+      </div>
+      <div class="footer-col footer-col--resume">
+        <a href="Resume.pdf" target="_blank" class="footer-link">Resume ↗</a>
+      </div>
+    </div>
+  </footer>
+
 </div>
 
 <!-- ══ Floating Nav ══ -->
@@ -558,6 +650,30 @@
   </div>
 
 <script>
+  // Footer local time
+  function updateFooterTime() {
+    const el = document.getElementById('footerTime');
+    if (!el) return;
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    const offset = -now.getTimezoneOffset() / 60;
+    const tz = 'GMT' + (offset >= 0 ? '+' : '') + offset;
+    el.textContent = `${h}:${m}:${s} ${tz}`;
+  }
+  updateFooterTime();
+  setInterval(updateFooterTime, 1000);
+
+  function copyEmail(btn) {
+    navigator.clipboard.writeText('brandon_wan@sfu.ca').then(() => {
+      btn.classList.add('copied');
+      const original = btn.innerHTML;
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><polyline points="2,7 5,10 11,3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      setTimeout(() => { btn.innerHTML = original; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+
   // ── Page fade ──
   const overlay = document.getElementById('page-overlay');
   overlay.style.transition = 'opacity 1.5s ease';
