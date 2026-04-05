@@ -30,7 +30,7 @@
       background: #0000ff; border-radius: 50%;
       pointer-events: none; z-index: 99999;
       transform: translate(-50%, -50%) scale(1);
-      transition: transform 0.2s cubic-bezier(0.34, 1.6, 0.64, 1);
+      transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
       will-change: transform;
     }
     #cursor.is-hovering { transform: translate(-50%, -50%) scale(2.2); }
@@ -407,12 +407,12 @@
       white-space: nowrap;
       transform: translateX(0px);
       transition:
-        transform 0.4s cubic-bezier(0.34, 1.6, 0.64, 1),
+        transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
         opacity   0.2s ease,
         color     0.15s ease;
     }
     .dropdown-item.item-hovered {
-      transform: translateX(6px);
+      transform: translateX(3px);
       color: rgba(78,78,78,1);
       opacity: 1 !important;
     }
@@ -584,6 +584,11 @@
         white-space: nowrap;
       }
 
+      @keyframes navItemIn {
+        from { opacity: 0; transform: translateY(22px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
       .mobile-nav-overlay {
         display: flex;
         flex-direction: column;
@@ -591,18 +596,32 @@
         inset: 0;
         background: #fff;
         z-index: 2000;
-        padding: 52px 28px 120px;
+        padding: 0 28px 120px;
         overflow-y: auto;
         opacity: 0;
         pointer-events: none;
-        transform: translateY(20px);
-        transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+        transition: opacity 0.18s ease;
       }
       .mobile-nav-overlay.is-open {
         opacity: 1;
         pointer-events: all;
-        transform: translateY(0);
       }
+      /* Stagger children bottom-up when overlay opens */
+      .mobile-nav-overlay.is-open > * {
+        animation: navItemIn 0.45s cubic-bezier(0.25, 1, 0.4, 1) both;
+      }
+      .mobile-nav-overlay.is-open > *:nth-last-child(1)  { animation-delay: 0ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(2)  { animation-delay: 45ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(3)  { animation-delay: 85ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(4)  { animation-delay: 120ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(5)  { animation-delay: 150ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(6)  { animation-delay: 178ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(7)  { animation-delay: 203ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(8)  { animation-delay: 225ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(9)  { animation-delay: 244ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(10) { animation-delay: 260ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(11) { animation-delay: 274ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(12) { animation-delay: 286ms; }
 
       .mobile-nav-section-label {
         font-size: 11px;
@@ -720,6 +739,7 @@
       <div class="page-nav-bar" data-idx="4"></div>
       <div class="page-nav-bar" data-idx="5"></div>
       <div class="page-nav-bar" data-idx="6"></div>
+      <div class="page-nav-bar" data-idx="7"></div>
     </div>
     <div class="page-nav-popup" id="pageNavPopup">
       <div class="popup-item is-active" data-idx="0">Overview</div>
@@ -728,7 +748,8 @@
       <div class="popup-item" data-idx="3">Core Flow</div>
       <div class="popup-item" data-idx="4">Research</div>
       <div class="popup-item" data-idx="5">Decisions</div>
-      <div class="popup-item" data-idx="6">Takeaways</div>
+      <div class="popup-item" data-idx="6">Video Pitch</div>
+      <div class="popup-item" data-idx="7">Takeaways</div>
     </div>
   </div>
 
@@ -887,6 +908,26 @@
 
     </section>
 
+    <!-- VIDEO PITCH -->
+    <section id="section-videopitch" class="cs-section">
+      <p class="section-label" style="margin-bottom:32px;">VIDEO PITCH</p>
+      <h2 class="sub-heading">The Story We Pitched</h2>
+      <p class="text-md" style="margin-top:24px; max-width:684px;">I co-scripted, voiced, and motion-designed this pitch video to bring FoodStash to life and communicate the problem we were solving.</p>
+      <a href="https://www.youtube.com/watch?v=kZYtSuFNTGI" target="_blank" rel="noopener"
+         style="margin-top:32px; display:block; width:100%; aspect-ratio:16/9; border-radius:3px; overflow:hidden; position:relative; background:#000; text-decoration:none;">
+        <img src="https://i.ytimg.com/vi/kZYtSuFNTGI/maxresdefault.jpg" alt="FoodStash Video Pitch"
+             style="width:100%; height:100%; object-fit:cover; display:block; opacity:0.85;">
+        <!-- Play button -->
+        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;">
+          <div style="width:68px; height:48px; background:rgba(0,0,0,0.75); border-radius:12px; display:flex; align-items:center; justify-content:center;">
+            <svg viewBox="0 0 24 24" style="width:28px; height:28px; fill:#fff; margin-left:3px;">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
+        </div>
+      </a>
+    </section>
+
     <!-- TAKEAWAYS -->
     <section id="section-takeaways" class="cs-section">
       <p class="section-label" style="margin-bottom:32px;">TAKEAWAYS</p>
@@ -934,9 +975,12 @@
 
   <!-- Mobile nav overlay -->
   <div class="mobile-nav-overlay" id="mobileNavOverlay">
-    <span class="mobile-nav-link" onclick="mobileNavigate('index.html')">
+    <span class="mobile-nav-link" onclick="mobileNavigate('index.html')" style="align-items:center; position:sticky; top:0; background:#fff; z-index:10; margin-left:-28px; margin-right:-28px; padding: 52px 28px 20px;">
       <img class="mobile-nav-thumb" src="pfp.png" alt="" style="object-fit:cover;">
-      Homepage
+      <span style="display:flex; flex-direction:column; gap:2px;">
+        <span style="font-size:17px; font-weight:500; color:#1a1a1a; line-height:1.2;">Brandon Wan</span>
+        <span style="font-size:13px; font-weight:400; color:#a0a0a0; line-height:1.2;">A Product Designer based in YVR</span>
+      </span>
     </span>
     <p class="mobile-nav-section-label">Work</p>
     <span class="mobile-nav-link is-current" onclick="mobileNavigate('foodstash.html')">
@@ -1137,7 +1181,7 @@
     const SECTION_IDS = [
       'section-overview', 'section-problem', 'section-solution',
       'section-coreflows', // Core Flow → scrolls to CORE FLOWS label within solution
-      'section-research', 'section-decisions', 'section-takeaways'
+      'section-research', 'section-decisions', 'section-videopitch', 'section-takeaways'
     ];
     const sectionEls  = SECTION_IDS.map(id => document.getElementById(id)).filter(Boolean);
     const navBars     = [...document.querySelectorAll('.page-nav-bar')];
@@ -1223,9 +1267,7 @@
         if (item.img) {
           const img = document.createElement('img');
           img.src = item.img;
-          img.style.cssText = key === 'work'
-            ? 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;padding:10px;box-sizing:border-box;'
-            : 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;';
+          img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;';
           box.appendChild(img);
         }
         previews.appendChild(box);

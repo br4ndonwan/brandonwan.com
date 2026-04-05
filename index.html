@@ -36,7 +36,7 @@
       pointer-events: none;
       z-index: 99999;
       transform: translate(-50%, -50%) scale(1);
-      transition: transform 0.2s cubic-bezier(0.34, 1.6, 0.64, 1);
+      transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
       will-change: transform;
     }
     #cursor.is-hovering {
@@ -284,14 +284,14 @@
       white-space: nowrap;
       transform: translateX(0px);
       transition:
-        transform 0.4s cubic-bezier(0.34, 1.6, 0.64, 1),
+        transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
         opacity   0.2s  ease,
         color     0.15s ease;
     }
 
     /* Slide right + full opacity on hover */
     .dropdown-item.item-hovered {
-      transform: translateX(6px);
+      transform: translateX(3px);
       color: rgba(78, 78, 78, 1);
       opacity: 1 !important;
     }
@@ -386,6 +386,84 @@
     /* ══════════════════════════════
        MOBILE NAV OVERLAY
     ══════════════════════════════ */
+    /* ── Showreel modal ── */
+    #showreelModal {
+      position: fixed;
+      inset: 0;
+      z-index: 9980;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    #showreelModal.is-open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    #showreelBackdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(220, 220, 220, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    #showreelInner {
+      position: relative;
+      z-index: 1;
+      width: min(92vw, calc(92vh * 16 / 9));
+      aspect-ratio: 16/9;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #000;
+      transform: scale(0.96) translateY(10px);
+      transition: transform 0.38s cubic-bezier(0.34, 1.2, 0.64, 1);
+    }
+    #showreelModal.is-open #showreelInner {
+      transform: scale(1) translateY(0);
+    }
+    #showreelVideo {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    #showreelClose {
+      position: fixed;
+      top: 24px;
+      right: 28px;
+      z-index: 9981;
+      font-size: 14px;
+      font-weight: 400;
+      color: #1a1a1a;
+      letter-spacing: 0.01em;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+    }
+    #showreelMute {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      z-index: 2;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font-family: inherit;
+      opacity: 0;
+      transition: opacity 0.2s ease, background 0.15s ease;
+    }
+    #showreelInner:hover #showreelMute { opacity: 1; }
+    #showreelMute:hover { background: rgba(0,0,0,0.75); }
+    #showreelMute svg { display: block; }
+
     .mobile-nav-pill { display: none; }
     .mobile-nav-overlay { display: none; }
     .mobile-nav-close { display: none; }
@@ -416,6 +494,11 @@
         white-space: nowrap;
       }
 
+      @keyframes navItemIn {
+        from { opacity: 0; transform: translateY(22px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
       .mobile-nav-overlay {
         display: flex;
         flex-direction: column;
@@ -423,18 +506,32 @@
         inset: 0;
         background: #fff;
         z-index: 2000;
-        padding: 52px 28px 120px;
+        padding: 0 28px 120px;
         overflow-y: auto;
         opacity: 0;
         pointer-events: none;
-        transform: translateY(20px);
-        transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+        transition: opacity 0.18s ease;
       }
       .mobile-nav-overlay.is-open {
         opacity: 1;
         pointer-events: all;
-        transform: translateY(0);
       }
+      /* Stagger children bottom-up when overlay opens */
+      .mobile-nav-overlay.is-open > * {
+        animation: navItemIn 0.45s cubic-bezier(0.25, 1, 0.4, 1) both;
+      }
+      .mobile-nav-overlay.is-open > *:nth-last-child(1)  { animation-delay: 0ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(2)  { animation-delay: 45ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(3)  { animation-delay: 85ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(4)  { animation-delay: 120ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(5)  { animation-delay: 150ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(6)  { animation-delay: 178ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(7)  { animation-delay: 203ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(8)  { animation-delay: 225ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(9)  { animation-delay: 244ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(10) { animation-delay: 260ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(11) { animation-delay: 274ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(12) { animation-delay: 286ms; }
 
       .mobile-nav-section-label {
         font-size: 11px;
@@ -546,13 +643,13 @@
       </div>
       <div class="header-right">
         <div class="header-links">
-          <a href="#">Showreel</a>
+          <a href="#" id="showreelBtn">Showreel</a>
           <a href="https://linkedin.com/in/brandontywan" target="_blank">LinkedIn</a>
           <a href="https://x.com/br4ndonwan" target="_blank">Twitter</a>
         </div>
       </div>
       <div class="header-links header-links-right" style="position:absolute; right:16px; top:0;">
-        <a href="mailto:hello@brandon.me">Email</a>
+        <a href="mailto:brandon_wan@sfu.ca">Email</a>
         <a href="#">Resume</a>
       </div>
     </div>
@@ -645,9 +742,12 @@
 
   <!-- Mobile nav overlay -->
   <div class="mobile-nav-overlay" id="mobileNavOverlay">
-    <span class="mobile-nav-link is-current" onclick="mobileNavigate('index.html')">
+    <span class="mobile-nav-link is-current" onclick="mobileNavigate('index.html')" style="align-items:center; position:sticky; top:0; background:#fff; z-index:10; margin-left:-28px; margin-right:-28px; padding: 52px 28px 20px;">
       <img class="mobile-nav-thumb" src="pfp.png" alt="" style="object-fit:cover;">
-      Homepage
+      <span style="display:flex; flex-direction:column; gap:2px;">
+        <span style="font-size:17px; font-weight:500; color:#1a1a1a; line-height:1.2;">Brandon Wan</span>
+        <span style="font-size:13px; font-weight:400; color:#a0a0a0; line-height:1.2;">A Product Designer based in YVR</span>
+      </span>
     </span>
     <p class="mobile-nav-section-label">Work</p>
     <span class="mobile-nav-link" onclick="mobileNavigate('foodstash.html')">
@@ -836,9 +936,7 @@
         if (item.img) {
           const img = document.createElement('img');
           img.src = item.img;
-          img.style.cssText = key === 'work'
-            ? 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;padding:10px;box-sizing:border-box;'
-            : 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;';
+          img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;';
           box.appendChild(img);
         }
         previews.appendChild(box);
@@ -977,5 +1075,73 @@
     if (mobileNavPill)  mobileNavPill.addEventListener('click', openMobileNav);
     if (mobileNavClose) mobileNavClose.addEventListener('click', closeMobileNav);
   </script>
+
+  <!-- Showreel modal -->
+  <div id="showreelModal">
+    <div id="showreelBackdrop"></div>
+    <button id="showreelClose">Close</button>
+    <div id="showreelInner">
+      <video id="showreelVideo" src="SHOWREEL.mp4" preload="metadata" playsinline muted></video>
+      <button id="showreelMute" title="Toggle mute">
+        <!-- Muted icon (shown when muted) -->
+        <svg id="iconMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <line x1="23" y1="9" x2="17" y2="15"/>
+          <line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+        <!-- Unmuted icon (shown when playing with sound) -->
+        <svg id="iconUnmuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ── Showreel modal ──
+    const showreelBtn    = document.getElementById('showreelBtn');
+    const showreelModal  = document.getElementById('showreelModal');
+    const showreelVideo  = document.getElementById('showreelVideo');
+    const showreelClose  = document.getElementById('showreelClose');
+    const showreelBack   = document.getElementById('showreelBackdrop');
+    const showreelMute   = document.getElementById('showreelMute');
+    const iconMuted      = document.getElementById('iconMuted');
+    const iconUnmuted    = document.getElementById('iconUnmuted');
+
+    function updateMuteIcon() {
+      iconMuted.style.display   = showreelVideo.muted ? 'block' : 'none';
+      iconUnmuted.style.display = showreelVideo.muted ? 'none'  : 'block';
+    }
+
+    function openShowreel(e) {
+      e.preventDefault();
+      showreelVideo.muted = true;
+      updateMuteIcon();
+      showreelVideo.play();
+      showreelModal.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeShowreel() {
+      showreelModal.classList.remove('is-open');
+      showreelVideo.pause();
+      showreelVideo.currentTime = 0;
+      showreelVideo.muted = true;
+      updateMuteIcon();
+      document.body.style.overflow = '';
+    }
+
+    showreelMute.addEventListener('click', () => {
+      showreelVideo.muted = !showreelVideo.muted;
+      updateMuteIcon();
+    });
+
+    showreelBtn.addEventListener('click', openShowreel);
+    showreelClose.addEventListener('click', closeShowreel);
+    showreelBack.addEventListener('click', closeShowreel);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeShowreel(); });
+  </script>
+
 </body>
 </html>

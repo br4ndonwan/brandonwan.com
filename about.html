@@ -18,7 +18,7 @@
       background: #0000ff; border-radius: 50%;
       pointer-events: none; z-index: 99999;
       transform: translate(-50%, -50%) scale(1);
-      transition: transform 0.2s cubic-bezier(0.34, 1.6, 0.64, 1);
+      transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
       will-change: transform;
     }
     #cursor.is-hovering { transform: translate(-50%, -50%) scale(2.2); }
@@ -114,7 +114,7 @@
       transform: translateX(0); user-select: none;
       transition: transform .4s cubic-bezier(.34,1.6,.64,1), opacity .2s ease, color .15s ease;
     }
-    .dropdown-item.item-hovered { transform: translateX(6px); color: rgba(78,78,78,1); opacity: 1 !important; }
+    .dropdown-item.item-hovered { transform: translateX(3px); color: rgba(78,78,78,1); opacity: 1 !important; }
     .dropdown-list.has-hover .dropdown-item:not(.item-hovered) { opacity: .35; }
     .preview-container {
       position: absolute; left: 182px; top: 18px;
@@ -212,6 +212,11 @@
         white-space: nowrap;
       }
 
+      @keyframes navItemIn {
+        from { opacity: 0; transform: translateY(22px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
       .mobile-nav-overlay {
         display: flex;
         flex-direction: column;
@@ -219,18 +224,32 @@
         inset: 0;
         background: #fff;
         z-index: 2000;
-        padding: 52px 28px 120px;
+        padding: 0 28px 120px;
         overflow-y: auto;
         opacity: 0;
         pointer-events: none;
-        transform: translateY(20px);
-        transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+        transition: opacity 0.18s ease;
       }
       .mobile-nav-overlay.is-open {
         opacity: 1;
         pointer-events: all;
-        transform: translateY(0);
       }
+      /* Stagger children bottom-up when overlay opens */
+      .mobile-nav-overlay.is-open > * {
+        animation: navItemIn 0.45s cubic-bezier(0.25, 1, 0.4, 1) both;
+      }
+      .mobile-nav-overlay.is-open > *:nth-last-child(1)  { animation-delay: 0ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(2)  { animation-delay: 45ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(3)  { animation-delay: 85ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(4)  { animation-delay: 120ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(5)  { animation-delay: 150ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(6)  { animation-delay: 178ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(7)  { animation-delay: 203ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(8)  { animation-delay: 225ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(9)  { animation-delay: 244ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(10) { animation-delay: 260ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(11) { animation-delay: 274ms; }
+      .mobile-nav-overlay.is-open > *:nth-last-child(12) { animation-delay: 286ms; }
 
       .mobile-nav-section-label {
         font-size: 11px;
@@ -340,14 +359,18 @@
     <div class="landing-body">
       <p>I'm a 4th year Interactive Arts and Technology student at Simon Fraser University.</p>
       <p>Good design isn't just how something works, it's how it feels. I specialize in making technical products clear, fast, and intentional.</p>
-      <p>Lately I've been exploring AI tools to see how they fit into my process.</p>
       <div>
-        <p>Want to learn how I got into design?</p>
-        <span class="landing-link" id="btnLearnMore">Learn more</span>
+        <p>Outside of design I'm:</p>
+        <ul style="margin-top:4px; padding-left:18px; display:flex; flex-direction:column; gap:2px;">
+          <li>Exploring AI tools that can fit into my rotation</li>
+          <li>Watching the Canucks tank for McKenna</li>
+          <li>Listening to Ye, Nine Vicious, and Jim Legxacy</li>
+          <li>Chasing the best bowl of Pho in Vancouver</li>
+        </ul>
       </div>
       <div>
         <p>Want to work together or just say hi?</p>
-        <p>Find me on <a class="landing-link" href="https://linkedin.com/in/brandonwan" target="_blank">LinkedIn</a>, <a class="landing-link" href="https://x.com/brandonwan" target="_blank">X</a>, or shoot me an <a class="landing-link" href="mailto:hello@brandon.me">email</a></p>
+        <p>Find me on <a class="landing-link" href="https://linkedin.com/in/brandontywan" target="_blank">LinkedIn</a>, <a class="landing-link" href="https://x.com/br4ndonwan" target="_blank">Twitter</a>, or shoot me an <a class="landing-link" href="mailto:brandon_wan@sfu.ca">email</a></p>
       </div>
       <p>I'd love to connect.</p>
     </div>
@@ -385,9 +408,12 @@
 
   <!-- Mobile nav overlay -->
   <div class="mobile-nav-overlay" id="mobileNavOverlay">
-    <span class="mobile-nav-link" onclick="mobileNavigate('index.html')">
+    <span class="mobile-nav-link" onclick="mobileNavigate('index.html')" style="align-items:center; position:sticky; top:0; background:#fff; z-index:10; margin-left:-28px; margin-right:-28px; padding: 52px 28px 20px;">
       <img class="mobile-nav-thumb" src="pfp.png" alt="" style="object-fit:cover;">
-      Homepage
+      <span style="display:flex; flex-direction:column; gap:2px;">
+        <span style="font-size:17px; font-weight:500; color:#1a1a1a; line-height:1.2;">Brandon Wan</span>
+        <span style="font-size:13px; font-weight:400; color:#a0a0a0; line-height:1.2;">A Product Designer based in YVR</span>
+      </span>
     </span>
     <p class="mobile-nav-section-label">Work</p>
     <span class="mobile-nav-link" onclick="mobileNavigate('foodstash.html')">
@@ -453,7 +479,6 @@
     setTimeout(() => { window.location.href = url; }, 90);
   }
 
-  document.getElementById('btnLearnMore').addEventListener('click', () => navigateTo('devices.html'));
 
   // ── Cursor ──
   const cursor = document.getElementById('cursor');
@@ -470,8 +495,9 @@
   // ══ Floating Nav ══
   const MENUS = {
     work: [
-      { label: 'Food Stash', url: 'foodstash.html' },
-      { label: 'MEC' },
+      { label: 'Food Stash', url: 'foodstash.html', img: 'VIDEO%20ASSETS/Foodstash/foodstash_logo.png' },
+      { label: 'MEC', comingSoon: true, img: 'VIDEO%20ASSETS/MEC/mec_logo.png' },
+      { label: 'Yeezy', comingSoon: true, img: 'VIDEO%20ASSETS/Yeezy/yzy_logo.png' },
     ],
     playground: [
       { label: 'Posters',      url: 'posters.html?filter=posters',     img: 'NAV/Poster.png'       },
@@ -491,7 +517,11 @@
     list.innerHTML = ''; previews.innerHTML = ''; activeBox = null;
     MENUS[key].forEach((item, i) => {
       const el = document.createElement('div');
-      el.className = 'dropdown-item'; el.textContent = item.label; el.dataset.idx = i;
+      el.className = 'dropdown-item';
+      el.innerHTML = item.comingSoon
+        ? `${item.label} <span style="font-weight:400; color:#c0c0c0;">(Coming Soon)</span>`
+        : item.label;
+      el.dataset.idx = i;
       el.addEventListener('mouseenter', () => {
         list.classList.add('has-hover');
         list.querySelectorAll('.dropdown-item').forEach(d => d.classList.remove('item-hovered'));
@@ -505,9 +535,7 @@
       if (item.img) {
         const img = document.createElement('img');
         img.src = item.img;
-        img.style.cssText = key === 'work'
-          ? 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;padding:10px;box-sizing:border-box;'
-          : 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;';
+        img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;';
         box.appendChild(img);
       }
       previews.appendChild(box);
