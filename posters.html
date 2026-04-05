@@ -1059,13 +1059,15 @@
     function showBox(idx) {
       const target = previews.querySelector(`[data-idx="${idx}"]`);
       if (!target || activeBox === target) return;
+      const switching = !!activeBox;
       if (activeBox) {
-        activeBox.classList.remove('is-active');
+        activeBox.classList.remove('is-active', 'no-anim');
         activeBox.classList.add('is-leaving');
         const prev = activeBox;
         setTimeout(() => prev.classList.remove('is-leaving'), 250);
       }
       target.classList.remove('is-leaving');
+      if (switching) target.classList.add('no-anim');
       target.classList.add('is-active');
       activeBox = target;
     }

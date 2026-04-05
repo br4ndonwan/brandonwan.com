@@ -512,8 +512,11 @@
   function showBox(idx) {
     const t = previews.querySelector(`[data-idx="${idx}"]`);
     if (!t || activeBox === t) return;
-    if (activeBox) { activeBox.classList.remove('is-active'); activeBox.classList.add('is-leaving'); const p=activeBox; setTimeout(()=>p.classList.remove('is-leaving'),250); }
-    t.classList.remove('is-leaving'); t.classList.add('is-active'); activeBox = t;
+    const switching = !!activeBox;
+    if (activeBox) { activeBox.classList.remove('is-active', 'no-anim'); activeBox.classList.add('is-leaving'); const p=activeBox; setTimeout(()=>p.classList.remove('is-leaving'),250); }
+    t.classList.remove('is-leaving');
+    if (switching) t.classList.add('no-anim');
+    t.classList.add('is-active'); activeBox = t;
   }
   function hideBox() {
     if (!activeBox) return;

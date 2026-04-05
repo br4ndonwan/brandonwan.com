@@ -352,6 +352,7 @@
       transition: opacity 0.28s cubic-bezier(0.4,0,0.2,1), transform 0.42s cubic-bezier(0.34,1.2,0.64,1);
     }
     .preview-box.is-active { opacity: 1; transform: scale(1) translateY(0px); }
+    .preview-box.is-active.no-anim { transition: none; }
     .preview-box.is-leaving {
       opacity: 0; transform: scale(0.97) translateY(-2px);
       transition: opacity 0.18s cubic-bezier(0.4,0,1,1), transform 0.22s cubic-bezier(0.4,0,1,1);
@@ -786,8 +787,11 @@
     function showBox(idx) {
       const target = previews.querySelector(`[data-idx="${idx}"]`);
       if (!target || activeBox === target) return;
-      if (activeBox) { activeBox.classList.remove('is-active'); activeBox.classList.add('is-leaving'); const p = activeBox; setTimeout(() => p.classList.remove('is-leaving'), 250); }
-      target.classList.remove('is-leaving'); target.classList.add('is-active'); activeBox = target;
+      const switching = !!activeBox;
+      if (activeBox) { activeBox.classList.remove('is-active', 'no-anim'); activeBox.classList.add('is-leaving'); const p = activeBox; setTimeout(() => p.classList.remove('is-leaving'), 250); }
+      target.classList.remove('is-leaving');
+      if (switching) target.classList.add('no-anim');
+      target.classList.add('is-active'); activeBox = target;
     }
     function hideBox() {
       if (!activeBox) return;
