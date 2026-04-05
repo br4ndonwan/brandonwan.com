@@ -409,7 +409,6 @@
         transition: color 0.15s;
       }
       .mobile-col-btn:hover { color: #1a1a1a; }
-      .col-btn-active { color: #1a1a1a !important; }
 
       /* Content fills full width */
       .content {
@@ -712,7 +711,7 @@
 
       <!-- Mobile only: 2-col / 1-col toggle -->
       <div class="mobile-col-toggle">
-        <span class="mobile-col-btn col-btn-active" id="mobileCol1" data-cols="1">1</span><span class="mobile-col-btn" id="mobileCol2" data-cols="2">2</span><span class="mobile-col-btn" id="mobileCol3" data-cols="3">3</span>
+        <span class="mobile-col-btn" id="mobileColToggle">View 2</span>
       </div>
 
     </aside>
@@ -1015,12 +1014,6 @@
     let currentCols   = window.innerWidth <= 768 ? 2 : 3;
     let currentSort   = 'shuffle';
 
-    // Set active col button on load
-    const initBtn = document.querySelector(`.mobile-col-btn[data-cols="${currentCols}"]`);
-    if (initBtn) {
-      document.querySelectorAll('.mobile-col-btn').forEach(b => b.classList.remove('col-btn-active'));
-      initBtn.classList.add('col-btn-active');
-    }
 
     function getSorted(list) {
       const copy = [...list];
@@ -1107,15 +1100,15 @@
       });
     });
 
-    // ── Mobile col toggle ──
-    document.querySelectorAll('.mobile-col-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentCols = parseInt(btn.dataset.cols);
-        document.querySelectorAll('.mobile-col-btn').forEach(b => b.classList.remove('col-btn-active'));
-        btn.classList.add('col-btn-active');
+    // ── Mobile col toggle — cycles 1 → 2 → 3 → 1 ──
+    const mobileColToggle = document.getElementById('mobileColToggle');
+    if (mobileColToggle) {
+      mobileColToggle.addEventListener('click', () => {
+        currentCols = currentCols === 3 ? 1 : currentCols + 1;
+        mobileColToggle.textContent = `View ${currentCols}`;
         buildGrid();
       });
-    });
+    }
 
 
     // ── Sort controls ──
