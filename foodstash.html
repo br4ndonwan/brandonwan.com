@@ -1223,7 +1223,9 @@
         if (item.img) {
           const img = document.createElement('img');
           img.src = item.img;
-          img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;';
+          img.style.cssText = key === 'work'
+            ? 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;padding:10px;box-sizing:border-box;'
+            : 'width:100%;height:100%;object-fit:contain;display:block;border-radius:inherit;';
           box.appendChild(img);
         }
         previews.appendChild(box);
