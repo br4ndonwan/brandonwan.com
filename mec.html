@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="refresh" content="0; url=index.html">
+  <meta http-equiv="refresh" content="0; url=work.html">
   <title>Brandon Wan</title>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -733,10 +733,10 @@
         { label: 'MEC',        url: 'mec.html'       },
       ],
       playground: [
-        { label: 'Posters',      url: 'posters.html?filter=posters',     img: 'NAV/Poster.png'       },
-        { label: 'UI Design',    url: 'posters.html?filter=ui',           img: 'NAV/UI Design.png'    },
-        { label: 'Experimental', url: 'posters.html?filter=experimental', img: 'NAV/Experimental.png' },
-        { label: 'Social Media', url: 'posters.html?filter=social',       img: 'NAV/Social Media.png' },
+        { label: 'Posters',      url: 'playground.html?filter=posters',     img: 'NAV/Poster.png'       },
+        { label: 'UI Design',    url: 'playground.html?filter=ui',           img: 'NAV/UI Design.png'    },
+        { label: 'Experimental', url: 'playground.html?filter=experimental', img: 'NAV/Experimental.png' },
+        { label: 'Social Media', url: 'playground.html?filter=social',       img: 'NAV/Social Media.png' },
       ],
     };
 
@@ -829,9 +829,9 @@
     const btnAbout      = document.getElementById('btn-about');
 
     btnWork.addEventListener('mouseenter', () => { clearTimeout(closeTimer); openDropdown('work', btnWork); });
-    btnWork.addEventListener('click', () => navigateTo('index.html'));
+    btnWork.addEventListener('click', () => navigateTo('work.html'));
     btnPlayground.addEventListener('mouseenter', () => { clearTimeout(closeTimer); openDropdown('playground', btnPlayground); });
-    btnPlayground.addEventListener('click', () => navigateTo('posters.html'));
+    btnPlayground.addEventListener('click', () => navigateTo('playground.html'));
     btnAbout.addEventListener('mouseenter', () => { clearTimeout(closeTimer); closeDropdown(); });
     btnAbout.addEventListener('click', () => navigateTo('about.html'));
   </script>

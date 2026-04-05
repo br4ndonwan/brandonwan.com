@@ -4,7 +4,7 @@
     {
       "name": "portfolio",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "3000", "--directory", "/Users/brandonwan/Desktop/Janel Portfolio"],
+      "runtimeArgs": ["-m", "http.server", "3000", "--directory", "/Users/brandonwan/Desktop/Portfolio"],
       "port": 3000
     }
   ]
