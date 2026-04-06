@@ -588,7 +588,7 @@
 
   <!-- Mobile nav overlay -->
   <div class="mobile-nav-overlay" id="mobileNavOverlay">
-    <span class="mobile-nav-link" onclick="mobileNavigate('work.html')" style="align-items:center; position:sticky; top:0; background:#fff; z-index:10; margin-left:-28px; margin-right:-28px; padding: 52px 28px 20px;">
+    <span class="mobile-nav-link" onclick="mobileNavigate('index.html')" style="align-items:center; position:sticky; top:0; background:#fff; z-index:10; margin-left:-28px; margin-right:-28px; padding: 52px 28px 20px;">
       <img class="mobile-nav-thumb" src="pfp.png" alt="" style="object-fit:cover;">
       <span style="display:flex; flex-direction:column; gap:2px;">
         <span style="font-size:17px; font-weight:500; color:#1a1a1a; line-height:1.2;">Brandon Wan</span>
@@ -1295,7 +1295,7 @@
   const btnAbout      = document.getElementById('btn-about');
 
   btnWork.addEventListener('mouseenter',       () => { clearTimeout(closeTimer); openDropdown('work', btnWork); });
-  btnWork.addEventListener('click',            () => navigateTo('work.html'));
+  btnWork.addEventListener('click',            () => navigateTo('index.html'));
   btnPlayground.addEventListener('mouseenter', () => { clearTimeout(closeTimer); openDropdown('playground', btnPlayground); });
   btnPlayground.addEventListener('click',      () => navigateTo('playground.html'));
   btnAbout.addEventListener('mouseenter',      () => { clearTimeout(closeTimer); closeDropdown(); });
