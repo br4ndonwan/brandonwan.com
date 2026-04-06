@@ -979,8 +979,13 @@
     const themeColor = document.getElementById('themeColor');
 
     // Skip animation if navigating from another page on the same site
+    // Exclude index.html redirect (pathname '/' or '/index.html') — treat as fresh load
+    const referrerPath = document.referrer !== '' ? new URL(document.referrer).pathname : '';
     const isInternalNav = document.referrer !== '' &&
-      new URL(document.referrer).hostname === location.hostname;
+      new URL(document.referrer).hostname === location.hostname &&
+      referrerPath !== '/' &&
+      !referrerPath.endsWith('index.html') &&
+      !referrerPath.endsWith('work.html');
 
     if (isInternalNav) {
       loader.style.display = 'none';
