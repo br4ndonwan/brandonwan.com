@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="theme-color" content="#0000ff" id="themeColor">
+  <meta name="theme-color" content="#ffffff" id="themeColor">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
@@ -62,7 +62,7 @@
     /* ── Page content fade-in after loader ── */
     .page-wrap {
       opacity: 0;
-      transition: opacity 0.6s ease;
+      transition: opacity 1.1s ease;
     }
     .page-wrap.visible {
       opacity: 1;
@@ -74,7 +74,7 @@
       align-items: flex-start;
       justify-content: space-between;
       padding: 28px 32px 48px;
-      margin-top: 40px;
+      margin-top: 20px;
       border-top: 1px solid #ebebeb;
       gap: 24px;
     }
@@ -925,10 +925,6 @@
     </span>
 
     <p class="mobile-nav-section-label">Playground</p>
-    <span class="mobile-nav-sub" onclick="mobileNavigate('playground.html')">
-      <div class="mobile-nav-thumb" style="background:#f0f0f0;"></div>
-      All
-    </span>
     <span class="mobile-nav-sub" onclick="mobileNavigate('playground.html?filter=posters')">
       <img class="mobile-nav-thumb" src="NAV/Poster.png" alt="">
       Posters
@@ -971,18 +967,12 @@
     updateClock();
     setInterval(updateClock, 1000);
 
-    // ── Intro loader (commented out temporarily) ──
+    // ── Intro loader ──
     const loader     = document.getElementById('loader');
     const loaderName = document.getElementById('loader-name');
     const pageWrap   = document.querySelector('.page-wrap');
-    const themeColor = document.getElementById('themeColor');
 
-    // Skip loader — show page immediately
-    loader.style.display = 'none';
-    pageWrap.classList.add('visible');
-    themeColor.setAttribute('content', '#ffffff');
-
-    /*
+    // Skip animation if navigating from another page on the same site
     const referrerPath = document.referrer !== '' ? new URL(document.referrer).pathname : '';
     const isInternalNav = document.referrer !== '' &&
       new URL(document.referrer).hostname === location.hostname &&
@@ -992,27 +982,24 @@
     if (isInternalNav) {
       loader.style.display = 'none';
       pageWrap.classList.add('visible');
-      themeColor.setAttribute('content', '#ffffff');
     } else {
+      // Step 1: name fades in
       setTimeout(() => loaderName.classList.add('visible'), 150);
+
+      // Step 2: name slides up + fades out
       setTimeout(() => loaderName.classList.add('exit'), 1800);
+
+      // Step 3: blue fades out
       setTimeout(() => {
         loader.classList.add('fade-out');
         setTimeout(() => { loader.style.display = 'none'; }, 900);
-        const fadeDuration = 750;
-        const fadeStart = Date.now();
-        function animateChrome() {
-          const t = Math.min((Date.now() - fadeStart) / fadeDuration, 1);
-          const v = Math.round(t * 255).toString(16).padStart(2, '0');
-          themeColor.setAttribute('content', `#${v}${v}ff`);
-          if (t < 1) requestAnimationFrame(animateChrome);
-          else themeColor.setAttribute('content', '#ffffff');
-        }
-        requestAnimationFrame(animateChrome);
       }, 1900);
-      setTimeout(() => { pageWrap.classList.add('visible'); }, 2200);
+
+      // Step 4: page content fades in after blue is gone — more dramatic delay + slower
+      setTimeout(() => {
+        pageWrap.classList.add('visible');
+      }, 2650);
     }
-    */
 
     // Step 3: preload playground assets quietly in background
     setTimeout(() => {
@@ -1307,7 +1294,7 @@
     <div id="showreelBackdrop"></div>
     <button id="showreelClose">Close</button>
     <div id="showreelInner">
-      <video id="showreelVideo" src="SHOWREEL.mp4" preload="metadata" playsinline muted></video>
+      <video id="showreelVideo" src="SHOWREEL.mp4" preload="metadata" playsinline muted loop></video>
       <button id="showreelMute" title="Toggle mute">
         <!-- Muted icon (shown when muted) -->
         <svg id="iconMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1362,6 +1349,21 @@
       showreelVideo.muted = !showreelVideo.muted;
       updateMuteIcon();
     });
+
+    // Mobile: tap video to show mute button briefly, then auto-hide after 3s
+    let muteHideTimer = null;
+    function showMuteTemporarily() {
+      showreelMute.style.opacity = '1';
+      clearTimeout(muteHideTimer);
+      muteHideTimer = setTimeout(() => {
+        showreelMute.style.opacity = '';
+      }, 3000);
+    }
+    showreelVideo.addEventListener('touchstart', showMuteTemporarily, { passive: true });
+    showreelMute.addEventListener('touchstart', () => {
+      clearTimeout(muteHideTimer);
+      muteHideTimer = setTimeout(() => { showreelMute.style.opacity = ''; }, 3000);
+    }, { passive: true });
 
     showreelBtn.addEventListener('click', openShowreel);
     showreelClose.addEventListener('click', closeShowreel);
